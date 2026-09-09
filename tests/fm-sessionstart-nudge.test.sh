@@ -44,6 +44,7 @@ make_primary() {
   git init -q "$dir"
   git -C "$dir" commit -q --allow-empty -m init
   : > "$dir/AGENTS.md"
+  : > "$dir/bin/fm-session-start.sh"
 }
 
 run_nudge() {
@@ -108,6 +109,7 @@ test_linked_secondmate_primary_nudges() {
   fm_git_worktree "$base" "$root" fm/sessionstart-secondmate
   mkdir -p "$root/bin" "$root/state"
   : > "$root/AGENTS.md"
+  : > "$root/bin/fm-session-start.sh"
   printf 'sessionstart-sm\n' > "$root/.fm-secondmate-home"
   out=$(run_nudge "$root") || status=$?
   expect_code 0 "$status" "linked secondmate nudge"
@@ -185,6 +187,7 @@ make_run_primary() {
   git init -q -b main "$dir"
   git -C "$dir" commit -q --allow-empty -m init
   : > "$dir/AGENTS.md"
+  : > "$dir/bin/fm-session-start.sh"
 }
 
 run_hook() {  # <root> [args...]
@@ -227,6 +230,7 @@ test_run_startup_creates_missing_state_on_a_fresh_clone() {
   git init -q -b main "$root"
   git -C "$root" commit -q --allow-empty -m init
   : > "$root/AGENTS.md"
+  : > "$root/bin/fm-session-start.sh"
   assert_absent "$root/state" "fixture setup must start with no state directory at all"
   out=$(run_hook "$root" --source startup </dev/null) || status=$?
   expect_code 0 "$status" "run wrapper startup on a fresh clone with no state directory yet"
@@ -235,6 +239,20 @@ test_run_startup_creates_missing_state_on_a_fresh_clone() {
   assert_present "$root/state/.lock" \
     "the run wrapper did not create the state directory a fresh clone needs for its first session"
   pass "run wrapper: a fresh clone with no state directory yet still gets the full digest"
+}
+
+test_run_unrelated_shape_without_marker_stays_silent() {
+  local root="$TMP_ROOT/run-unrelated-shape" out status=0
+  mkdir -p "$root/bin"
+  git init -q -b main "$root"
+  git -C "$root" commit -q --allow-empty -m init
+  : > "$root/AGENTS.md"
+  assert_absent "$root/state" "unrelated fixture setup must start with no state directory"
+  out=$(run_hook "$root" --source startup </dev/null) || status=$?
+  expect_code 0 "$status" "run wrapper unrelated repository without Firstmate marker"
+  [ -z "$out" ] || fail "an unrelated repository without Firstmate marker must be silent, got: $out"
+  assert_absent "$root/state" "an unrelated repository received a stray state directory"
+  pass "run wrapper: an unrelated AGENTS.md and bin checkout remains untouched"
 }
 
 test_run_clear_and_compact_reemit() {
@@ -1040,6 +1058,7 @@ test_owned_lock_is_silent
 test_opencode_plugin_delivers_exact_nudge_once
 test_run_startup_runs_the_full_digest
 test_run_startup_creates_missing_state_on_a_fresh_clone
+test_run_unrelated_shape_without_marker_stays_silent
 test_run_clear_and_compact_reemit
 test_run_rebuild_forwards_source_to_drifted_instruction_refresh
 test_run_compact_without_completion_refreshes_before_finishing_startup

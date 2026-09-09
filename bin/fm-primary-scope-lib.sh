@@ -17,8 +17,8 @@ fm_root_is_secondmate_home() {
   return 0
 }
 
-# Return 0 when $1 has the git/file shape of a genuine primary root, without
-# requiring its state directory to already exist. A valid secondmate marker
+# Return 0 when $1 has the git and required-file shape of a genuine primary
+# root, without requiring its state directory to already exist. A valid secondmate marker
 # force-includes a linked secondmate home. Otherwise only a plain checkout
 # matches, never a linked task worktree.
 # fm-sessionstart-run.sh uses this to decide whether creating a not-yet-
@@ -34,6 +34,7 @@ fm_primary_scope_shape_matches() {
   fi
   [ -f "$root/AGENTS.md" ] || return 1
   [ -d "$root/bin" ] || return 1
+  [ -f "$root/bin/fm-session-start.sh" ] || return 1
 }
 
 # Return 0 when $1 is a genuine primary root whose effective state dir is $2.
