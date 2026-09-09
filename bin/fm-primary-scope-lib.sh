@@ -17,11 +17,16 @@ fm_root_is_secondmate_home() {
   return 0
 }
 
-# Return 0 when $1 is a genuine primary root whose effective state dir is $2.
-# A valid secondmate marker force-includes a linked secondmate home.
-# Otherwise only a plain checkout is primary, never a linked task worktree.
-fm_primary_scope_matches() {
-  local root=$1 state=$2 git_dir git_common_dir
+# Return 0 when $1 has the git/file shape of a genuine primary root, without
+# requiring its state directory to already exist. A valid secondmate marker
+# force-includes a linked secondmate home. Otherwise only a plain checkout
+# matches, never a linked task worktree.
+# fm-sessionstart-run.sh uses this to decide whether creating a not-yet-
+# existing state directory is safe, for a genuinely fresh clone's first-ever
+# session start (see fm_primary_scope_matches below, which every other caller
+# keeps using unchanged).
+fm_primary_scope_shape_matches() {
+  local root=$1 git_dir git_common_dir
   if ! fm_root_is_secondmate_home "$root"; then
     git_dir=$(git -C "$root" rev-parse --git-dir 2>/dev/null) || return 1
     git_common_dir=$(git -C "$root" rev-parse --git-common-dir 2>/dev/null) || return 1
@@ -29,5 +34,11 @@ fm_primary_scope_matches() {
   fi
   [ -f "$root/AGENTS.md" ] || return 1
   [ -d "$root/bin" ] || return 1
+}
+
+# Return 0 when $1 is a genuine primary root whose effective state dir is $2.
+fm_primary_scope_matches() {
+  local root=$1 state=$2
+  fm_primary_scope_shape_matches "$root" || return 1
   [ -d "$state" ] || return 1
 }
