@@ -36,6 +36,9 @@ RUN="$ROOT/bin/fm-sessionstart-run.sh"
 NUDGE_TEXT="Run \`bin/fm-session-start.sh\` now, exactly once, before executing any other instructions."
 fm_operational_input_encode session-start "$NUDGE_TEXT" NUDGE_LINE \
   || fail "could not construct expected session-start nudge"
+RUN_NUDGE_TEXT="Firstmate: this looks like a fresh clone with no state directory yet. Run \`bin/fm-session-start.sh\` now to initialize this home and read its digest, then continue with AGENTS.md."
+fm_operational_input_encode session-start "$RUN_NUDGE_TEXT" RUN_NUDGE_LINE \
+  || fail "could not construct expected run-tier fresh-clone nudge"
 fm_git_identity fmtest fmtest@example.invalid
 
 make_primary() {
@@ -221,7 +224,7 @@ test_run_startup_runs_the_full_digest() {
   pass "run wrapper: startup runs the full digest and never also nudges"
 }
 
-test_run_startup_creates_missing_state_on_a_fresh_clone() {
+test_run_startup_nudges_a_fresh_clone_without_creating_state() {
   local root="$TMP_ROOT/run-fresh-clone" out status=0
   mkdir -p "$root/bin"
   git init -q -b main "$root"
@@ -230,11 +233,35 @@ test_run_startup_creates_missing_state_on_a_fresh_clone() {
   assert_absent "$root/state" "fixture setup must start with no state directory at all"
   out=$(run_hook "$root" --source startup </dev/null) || status=$?
   expect_code 0 "$status" "run wrapper startup on a fresh clone with no state directory yet"
-  assert_contains "$out" "$FULL_BANNER$root" \
-    "a fresh clone's first-ever session start did not run the full digest"
-  assert_present "$root/state/.lock" \
-    "the run wrapper did not create the state directory a fresh clone needs for its first session"
-  pass "run wrapper: a fresh clone with no state directory yet still gets the full digest"
+  [ "$out" = "$RUN_NUDGE_LINE" ] \
+    || fail "a fresh clone's first-ever session start did not print the exact nudge, got: $out"
+  assert_absent "$root/state" \
+    "the run wrapper created a state directory instead of only nudging"
+  pass "run wrapper: a fresh clone with no state directory yet is nudged, never silently initialized"
+}
+
+# The exact scenario the upstream review objected to: a checkout that merely
+# shares the accepted AGENTS.md+bin/ file shape by coincidence, not because it
+# is a genuine Firstmate home. Printing an instruction is harmless, so this
+# case is deliberately treated the same as a genuine fresh clone above; what
+# matters for safety is that it never gets a state directory and its digest
+# never runs, unlike the removed mkdir-then-execute behavior.
+test_run_startup_unrelated_shape_gets_nothing_created() {
+  local root="$TMP_ROOT/run-unrelated-shape" out status=0
+  mkdir -p "$root/bin"
+  git init -q -b main "$root"
+  git -C "$root" commit -q --allow-empty -m init
+  : > "$root/AGENTS.md"
+  assert_absent "$root/state" "unrelated fixture setup must start with no state directory"
+  out=$(run_hook "$root" --source startup </dev/null) || status=$?
+  expect_code 0 "$status" "run wrapper against an unrelated AGENTS.md+bin/ checkout"
+  [ "$out" = "$RUN_NUDGE_LINE" ] \
+    || fail "an unrelated checkout printed something other than the plain nudge, got: $out"
+  assert_not_contains "$out" "$FULL_BANNER" \
+    "an unrelated checkout that merely shares the accepted file shape had its digest run"
+  assert_absent "$root/state" \
+    "an unrelated checkout that merely shares the accepted file shape got a stray state directory"
+  pass "run wrapper: an unrelated AGENTS.md+bin/ checkout never gets a state directory or a digest run"
 }
 
 test_run_clear_and_compact_reemit() {
@@ -1039,7 +1066,8 @@ test_missing_state_is_silent
 test_owned_lock_is_silent
 test_opencode_plugin_delivers_exact_nudge_once
 test_run_startup_runs_the_full_digest
-test_run_startup_creates_missing_state_on_a_fresh_clone
+test_run_startup_nudges_a_fresh_clone_without_creating_state
+test_run_startup_unrelated_shape_gets_nothing_created
 test_run_clear_and_compact_reemit
 test_run_rebuild_forwards_source_to_drifted_instruction_refresh
 test_run_compact_without_completion_refreshes_before_finishing_startup

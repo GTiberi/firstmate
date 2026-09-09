@@ -21,10 +21,13 @@ fm_root_is_secondmate_home() {
 # requiring its state directory to already exist. A valid secondmate marker
 # force-includes a linked secondmate home. Otherwise only a plain checkout
 # matches, never a linked task worktree.
-# fm-sessionstart-run.sh uses this to decide whether creating a not-yet-
-# existing state directory is safe, for a genuinely fresh clone's first-ever
-# session start (see fm_primary_scope_matches below, which every other caller
-# keeps using unchanged).
+# fm-sessionstart-run.sh uses this to decide whether a not-yet-existing state
+# directory is a genuinely fresh clone worth nudging about, for a genuinely
+# fresh clone's first-ever session start (see fm_primary_scope_matches below,
+# which every other caller keeps using unchanged). It never authorizes
+# creating that directory: this shape check alone cannot prove Firstmate
+# provenance, only file layout, so the run wrapper only ever prints text on
+# this signal and leaves state-directory creation to fm-session-start.sh.
 fm_primary_scope_shape_matches() {
   local root=$1 git_dir git_common_dir
   if ! fm_root_is_secondmate_home "$root"; then

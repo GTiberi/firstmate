@@ -58,6 +58,8 @@ COMPLETION_FILE="$STATE/.session-start-complete"
 . "$SCRIPT_DIR/fm-session-lock-lib.sh"
 # shellcheck source=bin/fm-hook-host-lib.sh
 . "$SCRIPT_DIR/fm-hook-host-lib.sh"
+# shellcheck source=bin/fm-operational-input.sh
+. "$SCRIPT_DIR/fm-operational-input.sh"
 
 SOURCE=
 PI_PREREQUISITE=0
@@ -92,12 +94,22 @@ fm_is_gate_agent "$FM_ROOT" && stand_down
 # A genuinely fresh clone has no state directory yet, and fm_primary_scope_matches
 # requires one to exist so it never mistakes an unrelated AGENTS.md+bin/ checkout
 # for a real home. Without this, a brand-new home's very first session start would
-# stand down here before fm-session-start.sh ever runs, and fm-session-start.sh is
-# exactly the script that would have created that directory. Create it ourselves,
-# but only once the shape (git layout, AGENTS.md, bin/) already proves this is a
-# genuine primary root, so an unrelated repo never gets a stray state directory.
+# stand down here silently before fm-session-start.sh ever runs, and
+# fm-session-start.sh is exactly the script that would have created that
+# directory - so its very first launch would go unnoticed. This block never
+# creates the directory itself and never runs fm-session-start.sh on this
+# process's own inference: the file shape alone cannot prove Firstmate
+# provenance, only that a checkout looks the part (an unrelated repo can share
+# it by coincidence). Printing an instruction grants nothing, so the same
+# shape check that used to gate a mkdir now only gates a short nudge telling
+# whoever is driving this session to run the digest themselves; the home still
+# only ever gets initialized through a real fm-session-start.sh run.
 if [ ! -d "$STATE" ] && fm_primary_scope_shape_matches "$FM_ROOT"; then
-  mkdir -p "$STATE" 2>/dev/null || true
+  NUDGE=
+  fm_operational_input_encode session-start \
+    "Firstmate: this looks like a fresh clone with no state directory yet. Run \`bin/fm-session-start.sh\` now to initialize this home and read its digest, then continue with AGENTS.md." \
+    NUDGE && printf '%s\n' "$NUDGE"
+  exit 0
 fi
 fm_primary_scope_matches "$FM_ROOT" "$STATE" || stand_down
 
