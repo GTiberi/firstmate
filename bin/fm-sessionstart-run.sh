@@ -45,7 +45,9 @@
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RUN_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
 FM_ROOT="${FM_ROOT_OVERRIDE:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+FM_ROOT_CANONICAL=$(cd "$FM_ROOT" 2>/dev/null && pwd -P) || FM_ROOT_CANONICAL=
 FM_HOME="${FM_HOME:-${FM_ROOT_OVERRIDE:-$FM_ROOT}}"
 STATE="${FM_STATE_OVERRIDE:-$FM_HOME/state}"
 COMPLETION_FILE="$STATE/.session-start-complete"
@@ -91,12 +93,17 @@ fm_is_gate_agent "$FM_ROOT" && stand_down
 # requires one to exist so it never mistakes an unrelated AGENTS.md+bin/ checkout
 # for a real home. Without this, a brand-new home's very first session start would
 # stand down here before fm-session-start.sh ever runs, and fm-session-start.sh is
-# exactly the script that would have created that directory. Create it ourselves,
-# but only once the shape (git layout, AGENTS.md, bin/, fm-session-start.sh)
-# already proves this is a genuine primary root, so an unrelated repo never gets
-# a stray state directory.
-if [ ! -d "$STATE" ] && [ -f "$FM_ROOT/bin/fm-session-start.sh" ] \
-  && fm_primary_scope_shape_matches "$FM_ROOT"; then
+# exactly the script that would have created that directory. Create it only for
+# this installed wrapper's own standard state location and a root verified by
+# the immutable Firstmate history anchor: a caller cannot redirect a Firstmate
+# hook at an unrelated checkout with FM_ROOT_OVERRIDE or FM_HOME and make it
+# mutate that checkout. The shared shape check then retains the normal
+# primary-root and linked-worktree distinctions.
+STATE_PARENT=$(cd "$(dirname "$STATE")" 2>/dev/null && pwd -P) || STATE_PARENT=
+if [ ! -d "$STATE" ] && [ "${STATE##*/}" = state ] \
+  && [ "$STATE_PARENT" = "$RUN_ROOT" ] && [ "$FM_ROOT_CANONICAL" = "$RUN_ROOT" ] \
+  && fm_primary_scope_shape_matches "$FM_ROOT" \
+  && fm_primary_scope_is_firstmate_checkout "$FM_ROOT"; then
   mkdir -p "$STATE" 2>/dev/null || true
 fi
 fm_primary_scope_matches "$FM_ROOT" "$STATE" || stand_down

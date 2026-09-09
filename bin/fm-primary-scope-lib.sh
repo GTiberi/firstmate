@@ -36,6 +36,17 @@ fm_primary_scope_shape_matches() {
   [ -d "$root/bin" ] || return 1
 }
 
+# This immutable upstream commit distinguishes a Firstmate clone or fork from an
+# unrelated repository that happens to carry the hook's file shape. It applies
+# only before the run-tier hook creates its first state directory; existing
+# primary-scope callers retain the compatibility predicate below.
+FM_PRIMARY_SCOPE_HISTORY_ANCHOR=40c50ea8843c5b6a5351db8352675537252b653e
+
+# Return 0 when $1 descends from the Firstmate history anchor above.
+fm_primary_scope_is_firstmate_checkout() {
+  git -C "$1" merge-base --is-ancestor "$FM_PRIMARY_SCOPE_HISTORY_ANCHOR" HEAD 2>/dev/null
+}
+
 # Return 0 when $1 is a genuine primary root whose effective state dir is $2.
 fm_primary_scope_matches() {
   local root=$1 state=$2

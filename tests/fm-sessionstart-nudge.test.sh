@@ -197,6 +197,16 @@ run_hook() {  # <root> [args...]
     FM_GATE_REFUSE_BYPASS=0 FM_ROOT_OVERRIDE="$root" FM_HOME="$root" PATH="$RUN_PATH" "$RUN" "$@"
 }
 
+# Run the hook from an actual clone without redirecting its root or state. This
+# is the production fresh-clone path, unlike the lightweight fixtures above.
+run_hook_from_install() {  # <clone-root> [args...]
+  local root=$1
+  shift
+  env -u CLAUDECODE -u PI_CODING_AGENT -u FM_PI_HARNESS -u GROK_AGENT \
+    -u FM_ROOT_OVERRIDE -u FM_HOME -u FM_STATE_OVERRIDE \
+    FM_GATE_REFUSE_BYPASS=0 PATH="$RUN_PATH" "$root/bin/fm-sessionstart-run.sh" "$@"
+}
+
 run_hook_pi() {  # <root> [args...]
   local root=$1
   shift
@@ -226,13 +236,13 @@ test_run_startup_runs_the_full_digest() {
 
 test_run_startup_creates_missing_state_on_a_fresh_clone() {
   local root="$TMP_ROOT/run-fresh-clone" out status=0
-  mkdir -p "$root/bin"
-  git init -q -b main "$root"
-  git -C "$root" commit -q --allow-empty -m init
-  : > "$root/AGENTS.md"
-  : > "$root/bin/fm-session-start.sh"
+  git clone --quiet --no-local "$ROOT" "$root" || fail "could not clone the fresh-session fixture"
+  # Overlay the files under test so this behavioral test exercises uncommitted
+  # changes locally as well as the committed clone in CI.
+  cp "$RUN" "$ROOT/bin/fm-primary-scope-lib.sh" "$root/bin/" \
+    || fail "could not install the fresh-session fixture files"
   assert_absent "$root/state" "fixture setup must start with no state directory at all"
-  out=$(run_hook "$root" --source startup </dev/null) || status=$?
+  out=$(run_hook_from_install "$root" --source startup </dev/null) || status=$?
   expect_code 0 "$status" "run wrapper startup on a fresh clone with no state directory yet"
   assert_contains "$out" "$FULL_BANNER$root" \
     "a fresh clone's first-ever session start did not run the full digest"
@@ -243,14 +253,16 @@ test_run_startup_creates_missing_state_on_a_fresh_clone() {
 
 test_run_unrelated_shape_without_marker_stays_silent() {
   local root="$TMP_ROOT/run-unrelated-shape" out status=0
-  mkdir -p "$root/bin"
+  mkdir -p "$root"
+  cp -R "$ROOT/bin" "$root/" || fail "could not install the unrelated hook fixture"
+  cp "$ROOT/AGENTS.md" "$root/" || fail "could not install the unrelated instruction fixture"
   git init -q -b main "$root"
-  git -C "$root" commit -q --allow-empty -m init
-  : > "$root/AGENTS.md"
+  git -C "$root" add AGENTS.md bin
+  git -C "$root" commit -q -m init
   assert_absent "$root/state" "unrelated fixture setup must start with no state directory"
-  out=$(run_hook "$root" --source startup </dev/null) || status=$?
-  expect_code 0 "$status" "run wrapper unrelated repository without Firstmate marker"
-  [ -z "$out" ] || fail "an unrelated repository without Firstmate marker must be silent, got: $out"
+  out=$(run_hook_from_install "$root" --source startup </dev/null) || status=$?
+  expect_code 0 "$status" "run wrapper in an unrelated repository"
+  [ -z "$out" ] || fail "an unrelated repository must be silent, got: $out"
   assert_absent "$root/state" "an unrelated repository received a stray state directory"
   pass "run wrapper: an unrelated AGENTS.md and bin checkout remains untouched"
 }
