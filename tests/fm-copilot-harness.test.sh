@@ -497,6 +497,24 @@ test_notification_injects_watcher_followup_only_for_watcher_arm_completion() {
     *) fail "Copilot live-shape watcher notification lost the required recovery protocol: $body" ;;
   esac
 
+  # This shape is the actual wire payload Copilot CLI 1.0.83 writes to the
+  # hook's own stdin, captured live via a zero-added-hop diagnostic shim
+  # (task fm-copilot-notify-diag): snake_case notification_type plus
+  # hook_event_name, with camelCase notificationType absent entirely. The
+  # events.jsonl-derived "live-shape.json" fixture above (camelCase) reflects
+  # Copilot's internal event log, not this external hook's real input.
+  printf '%s' '{"sessionId":"s1","timestamp":1788965682233,"cwd":"'"$dir"'","message":"Shell command \"Arm Firstmate watcher\" (shellId: arm-watch-1) has completed successfully. Use read_bash with shellId \"arm-watch-1\" to retrieve the output.","title":"Arm Firstmate watcher","hook_event_name":"Notification","notification_type":"shell_completed"}' > "$dir/live-shape-true-wire.json"
+  out=$(cd "$dir" && PATH="$fakebin:$PATH" FM_FAKE_PS_COMM=MainThread FM_FAKE_PS_ARGS='copilot --allow-all' \
+    ./bin/fm-copilot-hook.sh notification < "$dir/live-shape-true-wire.json")
+  message=$(printf '%s' "$out" | jq -r '.additionalContext')
+  kind=$(printf '%s' "$message" | "$OPINPUT" kind)
+  [ "$kind" = watcher ] || fail "Copilot true-wire-shape watcher notification must inject watcher operational context, got '$kind' from: $out"
+  body=$(printf '%s' "$message" | "$OPINPUT" body)
+  case "$body" in
+    *'Inspect the completed task result for the reason line when needed.'*'Run bin/fm-wake-drain.sh first'*'open decisions and unread status lines'*'exact WAKE_ACK_REQUIRED --ack-through command printed by the drain.'*'Start the next attached asynchronous arm only if supervision remains required.'*) ;;
+    *) fail "Copilot true-wire-shape watcher notification lost the required recovery protocol: $body" ;;
+  esac
+
   printf '%s' '{"notificationType":"shell_completed","hook_event_name":"Notification","title":"Arm the Firstmate watcher","message":"Shell command \"Arm the Firstmate watcher\" (shellId: watch-cycle-2) has completed successfully. Use read_bash with shellId \"watch-cycle-2\" to retrieve the output.","command":null,"commandLine":null,"command_line":null}' > "$dir/live-shape-the.json"
   out=$(cd "$dir" && PATH="$fakebin:$PATH" FM_FAKE_PS_COMM=MainThread FM_FAKE_PS_ARGS='copilot --allow-all' \
     ./bin/fm-copilot-hook.sh notification < "$dir/live-shape-the.json")

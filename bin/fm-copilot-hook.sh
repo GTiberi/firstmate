@@ -41,12 +41,17 @@ copilot_notification_has_watcher_completion() {
   local payload=${1:-} root home policy command verdict saw_command=0
   [ -n "$payload" ] || return 1
   command -v jq >/dev/null 2>&1 || return 1
-  # Copilot's own real payload uses camelCase notificationType, not the
-  # snake_case notification_type this used to check; verified live against
-  # Copilot CLI 1.0.83 GA (see the fix commit message for the captured
-  # payload). That mismatch meant this predicate never matched a real
-  # notification at all, regardless of title, command, or shellId shape.
-  printf '%s' "$payload" | jq -e '.notificationType == "shell_completed"' >/dev/null 2>&1 || return 1
+  # The prior fix here (verified against Copilot CLI 1.0.83 GA) checked
+  # camelCase .notificationType, but that shape was read from Copilot's own
+  # internal session event log (events.jsonl), not from what Copilot actually
+  # writes to this hook's own stdin. A live capture of the true external-hook
+  # payload (a zero-added-hop diagnostic shim logging raw stdin, task
+  # fm-copilot-notify-diag) shows Copilot serializes the wire payload in a
+  # Claude-hook-compatible shape instead: snake_case .notification_type plus
+  # a .hook_event_name field, with .notificationType absent entirely. Check
+  # both spellings so a future reversion or another code path using the
+  # other casing keeps working.
+  printf '%s' "$payload" | jq -e '(.notificationType // .notification_type) == "shell_completed"' >/dev/null 2>&1 || return 1
   command -v node >/dev/null 2>&1 || return 1
   root=$(copilot_hook_root) || return 1
   home=$(copilot_hook_home "$root")
