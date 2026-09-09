@@ -235,7 +235,7 @@ jq -e '.stopReason == "end_turn" and (.stop_hook_active | type) == "boolean"' \
   || fail "agentStop payload did not carry the documented bounded-continuation fields"
 
 # shellcheck disable=SC2016 # Backticks are literal prompt markup.
-WATCHER_PROMPT='Run exactly `bin/fm-watch-arm.sh` as its own attached asynchronous bash task and then stop. After a later Firstmate watcher wake arrives, follow that Firstmate watcher wake instruction exactly and then reply exactly LIVE_WATCH_NOTIFICATION_OK. Never run bin/fm-wake-drain.sh unless a Firstmate watcher wake tells you to.'
+WATCHER_PROMPT='Run exactly `bin/fm-watch-arm.sh` as its own attached asynchronous bash task, named (its description) exactly `Arm Firstmate watcher`, then end your turn without stopping or killing that shell task. Wait for its completion notification, follow that Firstmate watcher wake instruction exactly, and then reply exactly LIVE_WATCH_NOTIFICATION_OK. Never run bin/fm-wake-drain.sh unless a Firstmate watcher wake tells you to.'
 submit "$WATCHER_PROMPT"
 wait_for_file "$REPO/.wake-ack-count" 300 "the watcher acknowledgement"
 wait_for_pane "LIVE_WATCH_NOTIFICATION_OK" 120 "the watcher completion response"
@@ -247,7 +247,7 @@ assert_contains "$(pane_text)" "LIVE_WATCH_NOTIFICATION_OK" \
   || fail "Copilot did not run the exact WAKE_ACK_REQUIRED acknowledgement after the watcher notification"
 [ "$(cat "$REPO/.wake-ack-args" 2>/dev/null)" = '--ack-through live-seq' ] \
   || fail "Copilot did not use the exact WAKE_ACK_REQUIRED acknowledgement command"
-jq -e '.notification_type == "shell_completed"' "$REPO/.notification-payload.json" >/dev/null \
+jq -e '.notificationType == "shell_completed"' "$REPO/.notification-payload.json" >/dev/null \
   || fail "the watcher completion did not emit Copilot's shell_completed notification"
 
 rm -f "$REPO/.wake-drain-count" "$REPO/.wake-ack-count" "$REPO/.wake-ack-args" "$REPO/.notification-payload.json"
@@ -261,7 +261,7 @@ assert_contains "$(pane_text)" "LIVE_UNRELATED_NOTIFICATION_OK" \
 [ "$(cat "$REPO/background-result" 2>/dev/null)" = LIVE_BACKGROUND_DONE ] \
   || fail "the unrelated attached background shell task did not complete"
 assert_absent "$REPO/.wake-drain-count" "an unrelated completion notification incorrectly triggered bin/fm-wake-drain.sh"
-jq -e '.notification_type == "shell_completed"' "$REPO/.notification-payload.json" >/dev/null \
+jq -e '.notificationType == "shell_completed"' "$REPO/.notification-payload.json" >/dev/null \
   || fail "the unrelated background completion did not emit Copilot's shell_completed notification"
 
 pass "Copilot live hooks: denial, stop continuation, watcher wake, and inert unrelated notifications ($COPILOT_VERSION)"
