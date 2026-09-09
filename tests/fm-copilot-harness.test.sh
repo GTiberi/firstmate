@@ -471,7 +471,7 @@ test_notification_injects_watcher_followup_only_for_watcher_arm_completion() {
 
   mkdir -p "$dir/config"
   : > "$dir/config/x-mode.env"
-  printf '%s' '{"notification_type":"shell_completed","command":"[ -f config/x-mode.env ] && . config/x-mode.env; exec ./bin/fm-watch-arm.sh"}' > "$dir/in.json"
+  printf '%s' '{"notificationType":"shell_completed","command":"[ -f config/x-mode.env ] && . config/x-mode.env; exec ./bin/fm-watch-arm.sh"}' > "$dir/in.json"
   out=$(cd "$dir" && PATH="$fakebin:$PATH" FM_FAKE_PS_COMM=MainThread FM_FAKE_PS_ARGS='copilot --allow-all' \
     ./bin/fm-copilot-hook.sh notification < "$dir/in.json")
   message=$(printf '%s' "$out" | jq -r '.additionalContext')
@@ -483,7 +483,9 @@ test_notification_injects_watcher_followup_only_for_watcher_arm_completion() {
     *) fail "Copilot watcher notification lost the required recovery protocol: $body" ;;
   esac
 
-  printf '%s' '{"notification_type":"shell_completed","hook_event_name":"Notification","title":"Arm Firstmate watcher","message":"Shell command \"Arm Firstmate watcher\" (shellId: 0) has completed successfully. Use read_bash with shellId \"0\" to retrieve the output.","command":null,"commandLine":null,"command_line":null}' > "$dir/live-shape.json"
+  # shellId "fm-watch-arm" mirrors a captured live Copilot CLI 1.0.83 GA payload verbatim:
+  # the model names its own async shell task's id freely and is not bound to a small integer.
+  printf '%s' '{"notificationType":"shell_completed","hook_event_name":"Notification","title":"Arm Firstmate watcher","message":"Shell command \"Arm Firstmate watcher\" (shellId: fm-watch-arm) has completed successfully. Use read_bash with shellId \"fm-watch-arm\" to retrieve the output.","command":null,"commandLine":null,"command_line":null}' > "$dir/live-shape.json"
   out=$(cd "$dir" && PATH="$fakebin:$PATH" FM_FAKE_PS_COMM=MainThread FM_FAKE_PS_ARGS='copilot --allow-all' \
     ./bin/fm-copilot-hook.sh notification < "$dir/live-shape.json")
   message=$(printf '%s' "$out" | jq -r '.additionalContext')
@@ -495,7 +497,7 @@ test_notification_injects_watcher_followup_only_for_watcher_arm_completion() {
     *) fail "Copilot live-shape watcher notification lost the required recovery protocol: $body" ;;
   esac
 
-  printf '%s' '{"notification_type":"shell_completed","hook_event_name":"Notification","title":"Arm the Firstmate watcher","message":"Shell command \"Arm the Firstmate watcher\" (shellId: 1) has completed successfully. Use read_bash with shellId \"1\" to retrieve the output.","command":null,"commandLine":null,"command_line":null}' > "$dir/live-shape-the.json"
+  printf '%s' '{"notificationType":"shell_completed","hook_event_name":"Notification","title":"Arm the Firstmate watcher","message":"Shell command \"Arm the Firstmate watcher\" (shellId: watch-cycle-2) has completed successfully. Use read_bash with shellId \"watch-cycle-2\" to retrieve the output.","command":null,"commandLine":null,"command_line":null}' > "$dir/live-shape-the.json"
   out=$(cd "$dir" && PATH="$fakebin:$PATH" FM_FAKE_PS_COMM=MainThread FM_FAKE_PS_ARGS='copilot --allow-all' \
     ./bin/fm-copilot-hook.sh notification < "$dir/live-shape-the.json")
   message=$(printf '%s' "$out" | jq -r '.additionalContext')
@@ -504,34 +506,34 @@ test_notification_injects_watcher_followup_only_for_watcher_arm_completion() {
 
   mkdir -p "$TMP_ROOT/notification-watcher-sibling/config"
   : > "$TMP_ROOT/notification-watcher-sibling/config/x-mode.env"
-  printf '%s' '{"notification_type":"shell_completed","command":"cd ../notification-watcher-sibling && [ -f config/x-mode.env ] && . config/x-mode.env; exec bin/fm-watch-arm.sh"}' > "$dir/sibling.json"
+  printf '%s' '{"notificationType":"shell_completed","command":"cd ../notification-watcher-sibling && [ -f config/x-mode.env ] && . config/x-mode.env; exec bin/fm-watch-arm.sh"}' > "$dir/sibling.json"
   out=$(cd "$dir" && PATH="$fakebin:$PATH" FM_FAKE_PS_COMM=MainThread FM_FAKE_PS_ARGS='copilot --allow-all' \
     ./bin/fm-copilot-hook.sh notification < "$dir/sibling.json")
   [ -z "$out" ] || fail "a sibling-root watcher completion must stay inert, got: $out"
 
-  printf '%s' '{"notification_type":"shell_completed","command":"export FM_HOME=/tmp/other; exec ./bin/fm-watch-arm.sh"}' > "$dir/home-rebind.json"
+  printf '%s' '{"notificationType":"shell_completed","command":"export FM_HOME=/tmp/other; exec ./bin/fm-watch-arm.sh"}' > "$dir/home-rebind.json"
   out=$(cd "$dir" && PATH="$fakebin:$PATH" FM_FAKE_PS_COMM=MainThread FM_FAKE_PS_ARGS='copilot --allow-all' \
     ./bin/fm-copilot-hook.sh notification < "$dir/home-rebind.json")
   [ -z "$out" ] || fail "an FM_HOME-rebound watcher completion must stay inert, got: $out"
 
-  printf '%s' '{"notification_type":"shell_completed","command":"export FM_STATE_OVERRIDE=/tmp/other; exec ./bin/fm-watch-arm.sh"}' > "$dir/state-rebind.json"
+  printf '%s' '{"notificationType":"shell_completed","command":"export FM_STATE_OVERRIDE=/tmp/other; exec ./bin/fm-watch-arm.sh"}' > "$dir/state-rebind.json"
   out=$(cd "$dir" && PATH="$fakebin:$PATH" FM_FAKE_PS_COMM=MainThread FM_FAKE_PS_ARGS='copilot --allow-all' \
     ./bin/fm-copilot-hook.sh notification < "$dir/state-rebind.json")
   [ -z "$out" ] || fail "an FM_STATE_OVERRIDE-rebound watcher completion must stay inert, got: $out"
 
   jq -n --arg cmd $'printf ready\nexec ./bin/fm-watch-arm.sh' \
-    '{notification_type:"shell_completed",command:$cmd}' > "$dir/multiline-command.json"
+    '{notificationType:"shell_completed",command:$cmd}' > "$dir/multiline-command.json"
   out=$(cd "$dir" && PATH="$fakebin:$PATH" FM_FAKE_PS_COMM=MainThread FM_FAKE_PS_ARGS='copilot --allow-all' \
     ./bin/fm-copilot-hook.sh notification < "$dir/multiline-command.json")
   [ -z "$out" ] || fail "a multiline prefixed watcher completion must stay inert, got: $out"
 
   jq -n --arg cmd $'{ printf ready; }\nexec ./bin/fm-watch-arm.sh' \
-    '{notification_type:"shell_completed",commandLine:$cmd}' > "$dir/multiline-commandline.json"
+    '{notificationType:"shell_completed",commandLine:$cmd}' > "$dir/multiline-commandline.json"
   out=$(cd "$dir" && PATH="$fakebin:$PATH" FM_FAKE_PS_COMM=MainThread FM_FAKE_PS_ARGS='copilot --allow-all' \
     ./bin/fm-copilot-hook.sh notification < "$dir/multiline-commandline.json")
   [ -z "$out" ] || fail "a multiline bundled watcher completion in commandLine must stay inert, got: $out"
 
-  printf '%s' '{"notification_type":"shell_completed","command":"sleep 1; printf done > background-result"}' > "$dir/other.json"
+  printf '%s' '{"notificationType":"shell_completed","command":"sleep 1; printf done > background-result"}' > "$dir/other.json"
   out=$(cd "$dir" && PATH="$fakebin:$PATH" FM_FAKE_PS_COMM=MainThread FM_FAKE_PS_ARGS='copilot --allow-all' \
     ./bin/fm-copilot-hook.sh notification < "$dir/other.json")
   [ -z "$out" ] || fail "an unrelated background completion must stay inert, got: $out"
@@ -548,7 +550,7 @@ test_notification_requires_primary_scope() {
      "$ROOT/bin/fm-cursor-lib.sh" "$ROOT/bin/fm-primary-scope-lib.sh" \
      "$ROOT/bin/fm-operational-input.sh" "$ROOT/bin/fm-arm-command-policy.mjs" "$dir/bin/"
   chmod +x "$dir/bin/fm-copilot-hook.sh" "$dir/bin/fm-operational-input.sh"
-  printf '%s' '{"notification_type":"shell_completed","command":"exec bin/fm-watch-arm.sh"}' > "$dir/in.json"
+  printf '%s' '{"notificationType":"shell_completed","command":"exec bin/fm-watch-arm.sh"}' > "$dir/in.json"
   out=$(cd "$dir" && PATH="$fakebin:$PATH" FM_FAKE_PS_COMM=MainThread FM_FAKE_PS_ARGS='copilot --allow-all' \
     ./bin/fm-copilot-hook.sh notification < "$dir/in.json")
   [ -z "$out" ] || fail "notification hook must stay inert outside a genuine Firstmate primary, got: $out"
@@ -584,7 +586,7 @@ test_non_cli_hook_surface_stands_down() {
       "$dir/bin/fm-copilot-hook.sh" agent-stop < "$dir/in-stop.json")
   [ -z "$out" ] || fail "non-CLI agentStop hook printed output: $out"
   assert_absent "$dir/payload.json" "non-CLI hook invoked the Firstmate turn-end owner"
-  printf '%s' '{"notification_type":"shell_completed","command":"exec bin/fm-watch-arm.sh"}' > "$dir/in-note.json"
+  printf '%s' '{"notificationType":"shell_completed","command":"exec bin/fm-watch-arm.sh"}' > "$dir/in-note.json"
   out=$(env -u COPILOT_CLI PATH="$fakebin:$PATH" FM_FAKE_PS_COMM=bash FM_FAKE_PS_ARGS='bash' \
       "$dir/bin/fm-copilot-hook.sh" notification < "$dir/in-note.json")
   [ -z "$out" ] || fail "non-CLI notification hook printed output: $out"
