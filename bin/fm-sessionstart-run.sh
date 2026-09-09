@@ -95,7 +95,8 @@ fm_is_gate_agent "$FM_ROOT" && stand_down
 # but only once the shape (git layout, AGENTS.md, bin/, fm-session-start.sh)
 # already proves this is a genuine primary root, so an unrelated repo never gets
 # a stray state directory.
-if [ ! -d "$STATE" ] && fm_primary_scope_shape_matches "$FM_ROOT"; then
+if [ ! -d "$STATE" ] && [ -f "$FM_ROOT/bin/fm-session-start.sh" ] \
+  && fm_primary_scope_shape_matches "$FM_ROOT"; then
   mkdir -p "$STATE" 2>/dev/null || true
 fi
 fm_primary_scope_matches "$FM_ROOT" "$STATE" || stand_down

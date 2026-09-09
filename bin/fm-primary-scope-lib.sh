@@ -34,7 +34,6 @@ fm_primary_scope_shape_matches() {
   fi
   [ -f "$root/AGENTS.md" ] || return 1
   [ -d "$root/bin" ] || return 1
-  [ -f "$root/bin/fm-session-start.sh" ] || return 1
 }
 
 # Return 0 when $1 is a genuine primary root whose effective state dir is $2.
