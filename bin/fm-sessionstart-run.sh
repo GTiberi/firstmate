@@ -89,6 +89,16 @@ stand_down() {
 # they do not own. Pi's preflight-only status preserves that intentional silence
 # without mistaking it for a failed eligible attempt that needs the manual nudge.
 fm_is_gate_agent "$FM_ROOT" && stand_down
+# A genuinely fresh clone has no state directory yet, and fm_primary_scope_matches
+# requires one to exist so it never mistakes an unrelated AGENTS.md+bin/ checkout
+# for a real home. Without this, a brand-new home's very first session start would
+# stand down here before fm-session-start.sh ever runs, and fm-session-start.sh is
+# exactly the script that would have created that directory. Create it ourselves,
+# but only once the shape (git layout, AGENTS.md, bin/) already proves this is a
+# genuine primary root, so an unrelated repo never gets a stray state directory.
+if [ ! -d "$STATE" ] && fm_primary_scope_shape_matches "$FM_ROOT"; then
+  mkdir -p "$STATE" 2>/dev/null || true
+fi
 fm_primary_scope_matches "$FM_ROOT" "$STATE" || stand_down
 
 session_start_completed() {

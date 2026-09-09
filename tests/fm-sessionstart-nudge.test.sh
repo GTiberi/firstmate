@@ -221,6 +221,22 @@ test_run_startup_runs_the_full_digest() {
   pass "run wrapper: startup runs the full digest and never also nudges"
 }
 
+test_run_startup_creates_missing_state_on_a_fresh_clone() {
+  local root="$TMP_ROOT/run-fresh-clone" out status=0
+  mkdir -p "$root/bin"
+  git init -q -b main "$root"
+  git -C "$root" commit -q --allow-empty -m init
+  : > "$root/AGENTS.md"
+  assert_absent "$root/state" "fixture setup must start with no state directory at all"
+  out=$(run_hook "$root" --source startup </dev/null) || status=$?
+  expect_code 0 "$status" "run wrapper startup on a fresh clone with no state directory yet"
+  assert_contains "$out" "$FULL_BANNER$root" \
+    "a fresh clone's first-ever session start did not run the full digest"
+  assert_present "$root/state/.lock" \
+    "the run wrapper did not create the state directory a fresh clone needs for its first session"
+  pass "run wrapper: a fresh clone with no state directory yet still gets the full digest"
+}
+
 test_run_clear_and_compact_reemit() {
   local root out source status
   for source in clear compact; do
@@ -1023,6 +1039,7 @@ test_missing_state_is_silent
 test_owned_lock_is_silent
 test_opencode_plugin_delivers_exact_nudge_once
 test_run_startup_runs_the_full_digest
+test_run_startup_creates_missing_state_on_a_fresh_clone
 test_run_clear_and_compact_reemit
 test_run_rebuild_forwards_source_to_drifted_instruction_refresh
 test_run_compact_without_completion_refreshes_before_finishing_startup
