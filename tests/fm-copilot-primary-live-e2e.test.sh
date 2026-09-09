@@ -167,6 +167,18 @@ pane_text() {
   "$REAL_TMUX" -L "$SOCKET" capture-pane -p -t primary -S -240 2>/dev/null || true
 }
 
+# Locally strengthens the shared lib.sh fail() so every assertion failure in
+# this live e2e test - not just wait_for_file/wait_for_pane's own explicit
+# dumps below - captures the pane for diagnosis. bash resolves the unqualified
+# `fail` calls inside assert_contains/assert_absent/etc. dynamically at call
+# time, so this redefinition also covers those; scoped to this file only, the
+# shared tests/lib.sh fail() is untouched for every other test.
+fail() {
+  printf 'not ok - %s\n' "$1" >&2
+  printf 'pane at failure:\n%s\n' "$(pane_text)" >&2
+  exit 1
+}
+
 wait_for_file() {  # <path> <seconds> <what>
   local path=$1 limit=$2 what=$3 i=0
   while [ "$i" -lt "$((limit * 2))" ]; do
@@ -174,7 +186,6 @@ wait_for_file() {  # <path> <seconds> <what>
     sleep 0.5
     i=$((i + 1))
   done
-  printf 'pane at failure:\n%s\n' "$(pane_text)" >&2
   fail "$what did not appear within ${limit}s"
 }
 
@@ -185,7 +196,6 @@ wait_for_pane() {  # <needle> <seconds> <what>
     sleep 0.5
     i=$((i + 1))
   done
-  printf 'pane at failure:\n%s\n' "$(pane_text)" >&2
   fail "$what did not appear within ${limit}s"
 }
 
@@ -247,7 +257,7 @@ assert_contains "$(pane_text)" "LIVE_WATCH_NOTIFICATION_OK" \
   || fail "Copilot did not run the exact WAKE_ACK_REQUIRED acknowledgement after the watcher notification"
 [ "$(cat "$REPO/.wake-ack-args" 2>/dev/null)" = '--ack-through live-seq' ] \
   || fail "Copilot did not use the exact WAKE_ACK_REQUIRED acknowledgement command"
-jq -e '.notificationType == "shell_completed"' "$REPO/.notification-payload.json" >/dev/null \
+jq -e '(.notificationType // .notification_type) == "shell_completed"' "$REPO/.notification-payload.json" >/dev/null \
   || fail "the watcher completion did not emit Copilot's shell_completed notification"
 
 rm -f "$REPO/.wake-drain-count" "$REPO/.wake-ack-count" "$REPO/.wake-ack-args" "$REPO/.notification-payload.json"
@@ -261,7 +271,7 @@ assert_contains "$(pane_text)" "LIVE_UNRELATED_NOTIFICATION_OK" \
 [ "$(cat "$REPO/background-result" 2>/dev/null)" = LIVE_BACKGROUND_DONE ] \
   || fail "the unrelated attached background shell task did not complete"
 assert_absent "$REPO/.wake-drain-count" "an unrelated completion notification incorrectly triggered bin/fm-wake-drain.sh"
-jq -e '.notificationType == "shell_completed"' "$REPO/.notification-payload.json" >/dev/null \
+jq -e '(.notificationType // .notification_type) == "shell_completed"' "$REPO/.notification-payload.json" >/dev/null \
   || fail "the unrelated background completion did not emit Copilot's shell_completed notification"
 
 pass "Copilot live hooks: denial, stop continuation, watcher wake, and inert unrelated notifications ($COPILOT_VERSION)"
