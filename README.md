@@ -82,7 +82,7 @@ Launch it with `--trust`, or none of its project hooks load; it also has no turn
 
 ```sh
 gh auth login
-git clone https://github.com/kunchenguid/firstmate
+git clone https://github.com/GTiberi/firstmate
 cd firstmate
 ```
 
@@ -132,6 +132,22 @@ Those Calm-hidden operational inputs remain ordinary user-role messages with unc
 The preference persists for the effective Firstmate home, and toggling it off restores ordinary rendering.
 [Calm's current behavior and supported limits](docs/calm.md) are separate from its [version-scoped maintainer evidence](docs/calm-mode-feasibility.md).
 Pi's `/supervision-model` command pins a cheaper model and a shallower reasoning effort for the supervision branch alone, from the eligible models and thinking levels Pi itself reports, and with no pin the branch normally follows your own conversation's model and effort; see the [configuration schema](docs/configuration.md#pi-supervision-branch-model-and-effort-configsupervision-branch-model-configsupervision-branch-effort).
+
+### About this fork
+
+This is a personal fork of [kunchenguid/firstmate](https://github.com/kunchenguid/firstmate).
+It carries upstream PR #3588 (the GitHub Copilot CLI adapter) as a merge into `main`, plus fork-local fixes on top.
+Upstream updates are pulled by merging `upstream/main`, never rebasing, so `/updatefirstmate` keeps fast-forwarding this fork's `main`.
+To re-sync with upstream:
+
+```sh
+git remote add upstream https://github.com/kunchenguid/firstmate   # once
+git fetch upstream main
+git checkout main && git pull --ff-only origin main
+git merge upstream/main
+bin/fm-lint.sh && tests/fm-copilot-harness.test.sh && tests/fm-sessionstart-nudge.test.sh
+git push origin main
+```
 
 ### Talk to it
 
