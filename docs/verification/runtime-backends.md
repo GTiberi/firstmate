@@ -1540,3 +1540,18 @@ A throwaway scout was spawned through `bin/fm-spawn.sh --scout --harness omp --m
 6. `bin/fm-control.sh <id> exit` stopped the agent and `bin/fm-teardown.sh` returned the worktree and closed the item.
 
 `FM_OMP_LIVE_E2E=1 tests/fm-omp-primary-live-e2e.test.sh` refreshes the primary evidence; the worker path above is refreshed by repeating the scout dispatch after any omp upgrade.
+
+## Claude Code Calm mod
+
+The Calm mod in `.claude/plugins/fm-calm` was verified against Claude Code 2.1.289 on 2026-10-03 with tmux 3.6 and `--model haiku`.
+[`tests/fm-calm-claude-mod-live-e2e.test.sh`](../../tests/fm-calm-claude-mod-live-e2e.test.sh) refreshes these facts with `FM_CALM_CLAUDE_LIVE_E2E=1`, and [`docs/evidence/calm-claude-mod/`](../evidence/calm-claude-mod/README.md) holds the captures.
+[`calm.md`](../calm.md) owns the behavior built on them.
+
+- **Composer input:** a prompt typed or pasted with U+2063 first reached the transcript without it, so the stored text began with `F` for `FIRSTMATE_OP:`.
+- **Spinner site:** the boat replaced the stock spinner line while the turn ran tools, drew exactly the window width at 100 and at 40 columns, and wrapped at neither.
+  Claude Code drew no spinner row of its own while a long reply streamed on the main screen.
+- **Colors:** a `Text` color of `ansi256(4)` and `ansi256(3)` was emitted as `38;5;4` and `38;5;3`, while `blue` and `yellow` were emitted as `38;5;68` and `38;5;220` and `ansi:blue` was refused as not a color.
+- **Hidden rows:** a tool row drawn as an empty box left no blank row between the prompt and the reply, and toggling Calm redrew rows already in the transcript in both directions.
+- **Project loading:** a project `.claude/settings.json` that declares a `directory` marketplace by relative path and enables its plugin loaded the plugin in place in the first session after the folder trust prompt.
+  A second project that declared the same marketplace name re-pointed the one user-global registration at its own path, and a session that started while it named a removed project loaded the mod a moment later.
+- **Headless:** `claude -p "/calm status"` and `/calm on` answered and persisted with no terminal, and outside a Firstmate home `/calm on` answered that no home was found and wrote nothing.

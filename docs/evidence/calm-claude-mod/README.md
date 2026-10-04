@@ -91,4 +91,4 @@ Ran 80 tests across 5 files. [1.64s]
 
 ## Refresh
 
-Run the mod's two engine checks and the drift guards with `tests/fm-calm-claude-mod.test.sh`, then repeat the session above after a Claude Code upgrade and replace the captures it changes.
+Run the mod's two engine checks and the drift guards with `tests/fm-calm-claude-mod.test.sh`, and the real-terminal checks with `FM_CALM_CLAUDE_LIVE_E2E=1 tests/fm-calm-claude-mod-live-e2e.test.sh`, then repeat the session above after a Claude Code upgrade and replace the captures it changes.

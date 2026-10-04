@@ -124,7 +124,9 @@ FM_PI_LIVE_E2E=1 tests/fm-pi-primary-live-e2e.test.sh
 tests/fm-calm-claude-mod.test.sh
 claude plugin validate --strict .claude/plugins/fm-calm
 claude plugin test .claude/plugins/fm-calm
+FM_CALM_CLAUDE_LIVE_E2E=1 tests/fm-calm-claude-mod-live-e2e.test.sh
 ```
 
 `tests/fm-calm-claude-mod.test.sh` runs the two `claude plugin` commands against the installed Claude Code and prints a skip line where it is absent or older than 2.1.287.
+The opt-in live guard drives a short real terminal session with a small model and fails naming the Claude Code version when a vendor fact the mod stands on changes; [`verification/runtime-backends.md`](verification/runtime-backends.md#claude-code-calm-mod) records those facts.
 The real-terminal captures that show the boat, the hidden rows, and the stock rendering back after `/calm off` are in [`evidence/calm-claude-mod/`](evidence/calm-claude-mod/README.md).
