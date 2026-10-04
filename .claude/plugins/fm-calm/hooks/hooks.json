@@ -1,0 +1,4 @@
+{
+  "description": "Firstmate Calm: the /calm command, the working boat, and hidden transcript chrome",
+  "modules": ["./register.ts"]
+}
