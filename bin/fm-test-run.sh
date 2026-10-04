@@ -316,6 +316,7 @@ family_for_basename() {
       ;;
     fm-afk-pi-herdr-return-e2e.test.sh|\
     fm-bearings-board-lavish-live-e2e.test.sh|\
+    fm-calm-claude-mod-live-e2e.test.sh|\
     fm-claude-stop-autoarm-live-e2e.test.sh|\
     fm-cmux-claude-composer-live-e2e.test.sh|\
     fm-composer-matrix-live-e2e.test.sh|\
@@ -1325,6 +1326,7 @@ families_for_changed_path() {
       # validates and tests the plugin through the installed claude and replays
       # the boat and the operational-row rules against their owners.
       printf '%s\n' __script__:fm-calm-claude-mod.test.sh
+      printf '%s\n' __script__:fm-calm-claude-mod-live-e2e.test.sh
       ;;
     .pi/extensions/lib/fm-calm-working-ship.ts)
       # The Pi boat the Claude Code mod's own copy is replayed against; the Pi
