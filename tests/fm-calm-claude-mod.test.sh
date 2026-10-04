@@ -272,7 +272,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const { isFirstmateOperationalInput } = await import(pathToFileURL(process.env.MOD_OPERATIONAL).href);
-const MARK = "⁣";
+const MARK = "\u2063";
 const fail = (message) => { throw new Error(message); };
 const show = (text) => JSON.stringify(text);
 

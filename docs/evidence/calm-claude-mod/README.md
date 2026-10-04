@@ -50,7 +50,7 @@ after /calm off:  o   f   f  \n
 ```
 
 The input sent for capture 08 began with U+2063, built with `printf '\xe2\x81\xa3FIRSTMATE_OP: v1 watcher: wake: reply with only the word ack.'` and typed with `tmux send-keys -l`.
-Claude Code stored the prompt without the separator: reading that session's transcript file under the Claude projects directory for `-tmp-calm-demo-harbor`, the stored text began with `F` (U+0046) and `'⁣' in text` was `False`.
+Claude Code stored the prompt without the separator: reading that session's transcript file under the Claude projects directory for `-tmp-calm-demo-harbor`, the stored text began with `F` (U+0046) and `'\u2063' in text` was `False`.
 That is why the mod matches the `FIRSTMATE_OP:` header with or without U+2063.
 
 The spinner colors in capture 11 are `38;5;3` for the boat and `38;5;4` for the water: entries 3 and 4 of the terminal's own 256-colour palette, the same entries the standard yellow and blue escape codes select.
