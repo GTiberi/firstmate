@@ -94,7 +94,7 @@ The VS Code chat panel, `claude -p`, the Agent SDK, and cloud sessions run the m
   The terminal draws it with entries 4 and 3 of its own 256-colour palette, which are what the standard blue and yellow escape codes select, because Claude Code resolves a named colour such as `blue` through its own theme instead; other surfaces are given the names.
 - **Tool rows:** `ToolUse`, `ToolResult`, `ToolGroup`, and `ToolProgress` render as an empty box that takes no rows.
 - **Operational user rows:** a `UserMessage` whose text is `FIRSTMATE_OP: v<n> <kind>: <body>`, the `[fm-from-firstmate]` carrier, or either legacy prefix proven by its U+2063 separator renders as an empty box, and every ordinary user row stays as drawn.
-  Claude Code drops U+2063 from everything typed or pasted into its composer, which is how Firstmate delivers an input to a Claude pane, so the mod matches the header with or without the separator.
+  Claude Code drops U+2063 from input typed or pasted into its composer, so an operational input sent to a Claude pane reaches the mod without it, and the mod matches the header with or without the separator.
   [`bin/fm-operational-input.sh`](../bin/fm-operational-input.sh) owns the protocol, and the mod matches its permanent `FIRSTMATE_OP:` header rather than a list of kinds, so a new kind stays hidden.
 
 With Calm off, every one of those sites goes through the stock drawing untouched, and toggling Calm off redraws them at once.
@@ -109,7 +109,7 @@ These are supported-API boundaries rather than hidden-content failures.
   An `AssistantMessage` site receives only its block's text and whether it opens a reply, `turn.step` results carry no message identity, and the session transcript the API returns carries none either, so a note cannot be told from the reply that ends a response without guessing from its text, and a wrong guess would hide a genuine reply.
 - **Collapsed thinking rows** and the `Baked for 3s` turn-duration line are not hidden; thinking has no render site, and the duration line is the stock completion line.
 - **The permission prompt and the question dialog** are never touched: the permission prompt is not a render site and the question dialog is drawn by the engine alone.
-- **The transcript view (`Ctrl+O`)** draws through the same sites, so tool rows stay hidden there until Calm is turned off.
+- **The detailed transcript view (`Ctrl+O`)** draws through the same sites, so tool rows stay hidden there too until Calm is turned off.
 - **The boat appears only where Claude Code draws its spinner.**
   While a long reply streams on the main screen Claude Code draws no spinner row of its own, so there is nothing to replace.
 - **A reload of the mod** resets the boat's resting column, because the animation state lives in the mod's own memory, and a run already under way keeps the stock spinner until the next one starts; `/clear` and `/resume` reset the column by design.
