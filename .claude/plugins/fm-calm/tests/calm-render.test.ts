@@ -9,8 +9,10 @@ import {
   isNothing,
   isStock,
   OPERATIONAL,
+  OPERATIONAL_WITH_MARK,
   PREFERENCE,
   runCalm,
+  SPINNER_PROPS,
   startSession,
   startTurn,
   textOf,
@@ -84,6 +86,31 @@ describe('the spinner', () => {
     expect(rows[1]?.startsWith(`\u001b[33m${HULL}\u001b[39m\u001b[34m`)).toBe(true)
     const colors = (rows.join('').match(/\u001b\[\d+m/g) ?? []).filter((code) => code !== '\u001b[39m')
     expect(new Set(colors)).toEqual(new Set(['\u001b[33m', '\u001b[34m']))
+  })
+
+  test('is accepted by every surface that draws a spinner, in its own colour names', async ($, on) => {
+    inWorld(on, ON)
+    await startSession($)
+    await startTurn($)
+    const viewport = { columns: 40, rows: 24 }
+
+    const colorsOn = async (surface: 'terminal' | 'desktop'): Promise<string[]> => {
+      const ui = await $.ui.mount({
+        plugin: 'fm-calm',
+        surface,
+        component: 'Spinner',
+        viewport,
+        props: SPINNER_PROPS,
+      })
+      const runs = await ui.findAll({ type: 'Text' })
+      await ui.unmount()
+      return [...new Set(runs.map((run) => String(run.props.color)))].sort()
+    }
+
+    // The terminal asks for entries 3 and 4 of its own palette, which is what SGR 33 and 34 select;
+    // a named colour would be resolved through Claude Code's theme instead.
+    expect(await colorsOn('terminal')).toEqual(['ansi256(3)', 'ansi256(4)', 'undefined'])
+    expect(await colorsOn('desktop')).toEqual(['blue', 'undefined', 'yellow'])
   })
 
   test('fills the usable width with water and never wraps', async ($, on) => {
@@ -366,9 +393,15 @@ describe('hidden chrome', () => {
     inWorld(on, ON)
     await startSession($)
 
-    expect(isNothing(await drawUserMessage($, OPERATIONAL))).toBe(true)
-    expect(isNothing(await drawUserMessage($, '[fm-from-firstmate]\u2063please re-check the build'))).toBe(true)
-    expect(isNothing(await drawUserMessage($, '\u2063Supervisor escalate (2 items): review ready'))).toBe(true)
+    for (const text of [
+      OPERATIONAL,
+      OPERATIONAL_WITH_MARK,
+      '[fm-from-firstmate]please re-check the build',
+      '[fm-from-firstmate]\u2063please re-check the build',
+      '\u2063Supervisor escalate (2 items): review ready',
+    ]) {
+      expect(isNothing(await drawUserMessage($, text)), text).toBe(true)
+    }
   })
 
   test('an ordinary user row stays as drawn', async ($, on) => {
@@ -377,8 +410,10 @@ describe('hidden chrome', () => {
 
     for (const text of [
       'please run the tests',
-      'FIRSTMATE_OP: v1 watcher: typed by hand, no invisible separator',
+      'explain FIRSTMATE_OP: v1 watcher: to me',
       'the prefix \u2063FIRSTMATE_OP: in the middle of a sentence',
+      'FIRSTMATE_OP: v1 WATCHER: shouting',
+      'FIRSTMATE_OP: ',
       '\u2063FIRSTMATE_OP: ',
       '',
     ]) {

@@ -51,5 +51,16 @@
         ]
       }
     ]
+  },
+  "extraKnownMarketplaces": {
+    "firstmate-local": {
+      "source": {
+        "source": "directory",
+        "path": "./.claude/plugins"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "fm-calm@firstmate-local": true
   }
 }

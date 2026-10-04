@@ -1,0 +1,14 @@
+{
+  "name": "firstmate-local",
+  "owner": {
+    "name": "Firstmate"
+  },
+  "description": "Firstmate's Claude Code mods, loaded in place from this repository",
+  "plugins": [
+    {
+      "name": "fm-calm",
+      "source": "./fm-calm",
+      "description": "Firstmate's /calm presentation toggle for Claude Code"
+    }
+  ]
+}

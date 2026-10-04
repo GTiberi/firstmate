@@ -202,6 +202,17 @@ export function createCalmWorkingShipAnimation(): CalmWorkingShipAnimation {
   }
 }
 
+/**
+ * The `color` prop that draws a run on a surface. Claude Code resolves a named colour such as
+ * "blue" through its theme (a dark-theme terminal draws it as 256-colour 68, not as ANSI blue)
+ * and has no raw escape sequences, so the terminal asks for palette indices 4 and 3 of its own
+ * 256-colour table, the entries the standard SGR 34 and 33 select. Other surfaces take the names.
+ */
+export function colorPropOf(color: ShipColor, surface: string): string {
+  if (surface !== 'terminal') return color
+  return color === 'blue' ? 'ansi256(4)' : 'ansi256(3)'
+}
+
 // Standard ANSI foreground codes only, the exact bytes the Pi widget draws.
 const ANSI_FOREGROUND = { blue: '\u001b[34m', yellow: '\u001b[33m' } as const
 const ANSI_RESET = '\u001b[39m'

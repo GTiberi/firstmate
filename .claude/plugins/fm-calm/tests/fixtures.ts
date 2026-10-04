@@ -11,7 +11,7 @@ import type {
 import { mock } from 'claude-code/testing'
 import type { Engine, MockClock } from 'claude-code/testing'
 
-import type { ShipRow, ShipRun } from '../lib/working-ship'
+import type { ShipColor, ShipRow, ShipRun } from '../lib/working-ship'
 import { ansiRowOf } from '../lib/working-ship'
 
 export const CHECKOUT = '/work/firstmate'
@@ -225,8 +225,11 @@ export async function drawUserMessage($: Engine, text: string): Promise<RenderEl
   })
 }
 
-/** The operational prefix: U+2063 INVISIBLE SEPARATOR then "FIRSTMATE_OP: ". */
-export const OPERATIONAL = '⁣FIRSTMATE_OP: v1 watcher: wake: signal fm-task-1'
+/** An operational row as Claude Code hands it over: its composer drops the leading U+2063. */
+export const OPERATIONAL = 'FIRSTMATE_OP: v1 watcher: wake: signal fm-task-1'
+
+/** The same row as bin/fm-operational-input.sh builds it, with U+2063 INVISIBLE SEPARATOR first. */
+export const OPERATIONAL_WITH_MARK = `\u2063${OPERATIONAL}`
 
 export function isStock(tree: RenderElement): boolean {
   return tree.type === 'Text' && textOf(tree) === 'stock'
@@ -243,6 +246,14 @@ export function textOf(node: Node): string {
   return (node.children ?? []).map(textOf).join('')
 }
 
+/** Every `color` prop the boat draws with, by surface family, and the colour it stands for. */
+const SHIP_COLORS: Record<string, ShipColor | undefined> = {
+  'ansi256(4)': 'blue',
+  'ansi256(3)': 'yellow',
+  blue: 'blue',
+  yellow: 'yellow',
+}
+
 /** The boat's rows as the tree draws them: one list of colored runs per row. */
 export function shipRowsOf(tree: RenderElement): ShipRow[] {
   const rows = (tree as { children?: readonly Node[] }).children ?? []
@@ -250,10 +261,8 @@ export function shipRowsOf(tree: RenderElement): ShipRow[] {
     if (typeof row === 'string') return [{ text: row }]
     return (row.children ?? []).map((cell): ShipRun => {
       if (typeof cell === 'string') return { text: cell }
-      const color = cell.props?.color
-      return color === 'blue' || color === 'yellow'
-        ? { text: textOf(cell), color }
-        : { text: textOf(cell) }
+      const color = SHIP_COLORS[String(cell.props?.color)]
+      return color === undefined ? { text: textOf(cell) } : { text: textOf(cell), color }
     })
   })
 }

@@ -28,6 +28,7 @@ import {
 } from '../lib/preference'
 import {
   CALM_WORKING_SHIP_TICK_MS,
+  colorPropOf,
   createCalmWorkingShipAnimation,
 } from '../lib/working-ship'
 
@@ -234,7 +235,7 @@ export function register(on: On): void {
           children: row.map((run) =>
             run.color === undefined
               ? Text({ children: [run.text] })
-              : Text({ color: run.color, children: [run.text] }),
+              : Text({ color: colorPropOf(run.color, e.surface), children: [run.text] }),
           ),
         }),
       ),
