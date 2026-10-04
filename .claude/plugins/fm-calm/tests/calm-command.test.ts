@@ -113,7 +113,7 @@ describe('/calm', () => {
     expect(temporary).not.toBe(PREFERENCE)
     expect(temporary.startsWith(`${PREFERENCE}.`)).toBe(true)
     expect(temporary.endsWith('.tmp')).toBe(true)
-    expect(world.runs).toEqual([['mv', '-f', temporary, PREFERENCE]])
+    expect(world.runs).toEqual([['mv', '-f', '--', temporary, PREFERENCE]])
     expect([...world.files.keys()].filter((path) => path.endsWith('.tmp'))).toEqual([])
   })
 

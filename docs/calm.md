@@ -74,6 +74,7 @@ A session that runs outside any Firstmate home, with no `FM_HOME`, `FM_ROOT_OVER
 ### Loading
 
 The tracked `.claude/settings.json` declares the repo-local marketplace in `.claude/plugins` and enables `fm-calm` from it, with a relative path so every clone and worktree resolves its own copy.
+The plugin lives in `.claude/plugins` because Claude Code scans neither that directory nor reads hooks from it, which leaves the tracked `.claude/skills` symlink and the project hooks in `.claude/settings.json` undisturbed.
 Plain `claude` launched in a checkout therefore loads the mod after the one step Claude Code asks of every project: accept the folder trust prompt once.
 Claude Code then registers the marketplace in the background and loads the plugin in place from the checkout, so `/calm` is available in the first session.
 The marketplace registration is user-global in Claude Code, so each checkout that opens re-points it at its own path, and a session that starts while it names a removed worktree loads the mod a moment later, once Claude Code has reconciled it.
@@ -81,6 +82,8 @@ The marketplace registration is user-global in Claude Code, so each checkout tha
 To load the mod for one session without the project settings, launch `claude --plugin-dir <absolute path>/.claude/plugins/fm-calm`.
 A Firstmate home that runs upstream firstmate code, which lacks these tracked files, loads the mod from a clone of this fork by setting `CLAUDE_CODE_PLUGIN_DIRS` to the absolute path of that clone's `.claude/plugins/fm-calm`, in the `env` block of `~/.claude/settings.json` or in the shell that starts `claude`.
 The mod then loads in every Claude Code session of that user, which is safe: it reads only the three home variables and the Firstmate checkout marker, and writes nothing outside the `config` directory of a resolved home.
+
+The mod follows the home a session resolves to, so a worker pane that inherits the primary's `FM_HOME` follows the primary's choice, while a worker in its own worktree without `FM_HOME` resolves to that worktree's own absent `config/calm` and stays off.
 
 Mods draw only in the terminal and in the Code tab of the Desktop app.
 The VS Code chat panel, `claude -p`, the Agent SDK, and cloud sessions run the mod's hooks and draw nothing, which changes no behavior: `/calm` still answers and persists the choice, and the model context is never touched.

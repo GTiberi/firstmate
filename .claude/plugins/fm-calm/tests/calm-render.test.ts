@@ -17,6 +17,7 @@ import {
   startTurn,
   textOf,
   TOOL_ROWS,
+  TOOL_USE_PROPS,
 } from './fixtures'
 import {
   CALM_WORKING_SHIP_TICK_MS,
@@ -367,6 +368,34 @@ describe('hidden chrome', () => {
 
     for (const row of Object.values(TOOL_ROWS)) {
       expect(isNothing(await $.ui.render(row)), row.component).toBe(true)
+    }
+  })
+
+  test('the empty drawing is accepted by every surface that draws these rows', async ($, on) => {
+    inWorld(on, ON)
+    await startSession($)
+
+    for (const surface of ['terminal', 'desktop', 'vscode', 'mobile'] as const) {
+      const tool = await $.ui.mount({
+        plugin: 'fm-calm',
+        surface,
+        component: 'ToolUse',
+        requestId: 'toolu_1',
+        props: TOOL_USE_PROPS,
+      })
+      expect(await tool.drawn(), `ToolUse on ${surface}`).toMatchObject({ type: 'Box' })
+      expect(await tool.find({ type: 'Text' }), `ToolUse on ${surface}`).toBeUndefined()
+      await tool.unmount()
+
+      const user = await $.ui.mount({
+        plugin: 'fm-calm',
+        surface,
+        component: 'UserMessage',
+        requestId: 'msg_1',
+        props: { text: OPERATIONAL, origin: { kind: 'composer' }, isExpanded: false },
+      })
+      expect(await user.find({ type: 'Text' }), `UserMessage on ${surface}`).toBeUndefined()
+      await user.unmount()
     }
   })
 

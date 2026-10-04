@@ -56,6 +56,39 @@ That is why the mod matches the `FIRSTMATE_OP:` header with or without U+2063.
 The spinner colors in capture 11 are `38;5;3` for the boat and `38;5;4` for the water: entries 3 and 4 of the terminal's own 256-colour palette, the same entries the standard yellow and blue escape codes select.
 A named color in the same place, `yellow` or `blue`, was drawn as `38;5;220` and `38;5;68`, which are Claude Code's theme colors and not the standard palette.
 
+## Plugin validation
+
+`claude plugin validate --strict` on the plugin, run from `<fork clone>` with Claude Code 2.1.289.
+The `calls:` list is the whole of what the mod asks Claude Code to do, and `tests/fm-calm-claude-mod.test.sh` fails if it changes.
+
+```text
+$ claude plugin validate --strict .claude/plugins/fm-calm
+Validating plugin manifest: <fork clone>/.claude/plugins/fm-calm/.claude-plugin/plugin.json
+
+Validating hooks: <fork clone>/.claude/plugins/fm-calm/hooks/hooks.json
+
+  ❯ ./register.ts hooks: session.start, classic.SessionStart, command.run{command=calm}, turn.start, turn.complete, ui.render{component=Spinner}, ui.render{component=ToolUse|ToolResult|ToolGroup|ToolProgress}, ui.render{component=UserMessage}
+  ❯ ./register.ts calls: $.clock.every (via startTicker), $.command.register, $.env.get (via calmPreferencePath), $.fs.exists (via firstmateCheckoutRoot), $.fs.read (via readCalmPreference), $.fs.write (via persistCalmPreference), $.process.run (via persistCalmPreference), $.session.cwd (via firstmateCheckoutRoot), $.session.root (via firstmateCheckoutRoot), $.ui.invalidate (via applyPresentation, startTicker), $.ui.resolve
+  ❯ ./register.ts env writes: nothing
+  ❯ ./register.ts env reads: FM_CONFIG_OVERRIDE, FM_HOME, FM_ROOT_OVERRIDE
+
+✔ Validation passed
+```
+
+```text
+$ claude plugin validate --strict .claude/plugins
+Validating marketplace manifest: <fork clone>/.claude/plugins/.claude-plugin/marketplace.json
+
+✔ Validation passed
+```
+
+```text
+$ claude plugin test .claude/plugins/fm-calm
+ 79 pass
+ 0 fail
+Ran 79 tests across 5 files. [1.96s]
+```
+
 ## Refresh
 
 Run the mod's two engine checks and the drift guards with `tests/fm-calm-claude-mod.test.sh`, then repeat the session above after a Claude Code upgrade and replace the captures it changes.

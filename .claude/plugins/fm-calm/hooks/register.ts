@@ -103,13 +103,13 @@ async function persistCalmPreference($: EngineInterface, active: boolean): Promi
   const temporary = temporaryPathOf(path, nonce)
   try {
     await $.fs.write(temporary, serializeCalmPreference(active))
-    const moved = await $.process.run(['mv', '-f', temporary, path])
+    const moved = await $.process.run(['mv', '-f', '--', temporary, path])
     if (moved.exitCode !== 0) {
       throw new Error(moved.stderr.trim() || `mv exited ${moved.exitCode}`)
     }
     return { isSaved: true }
   } catch (error) {
-    await $.process.run(['rm', '-f', temporary]).catch(() => undefined)
+    await $.process.run(['rm', '-f', '--', temporary]).catch(() => undefined)
     return { isSaved: false, reason: failureReasonOf(error instanceof Error ? error.message : String(error)) }
   }
 }

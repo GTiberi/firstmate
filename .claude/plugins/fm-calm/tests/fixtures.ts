@@ -90,7 +90,8 @@ export function inWorld(on: On, options: WorldOptions = {}): World {
   })
   on('process.run', (_$, e) => {
     runs.push([...e.argv])
-    const [program, flag, first, second] = e.argv
+    const [program, flag, separator, first, second] = e.argv
+    if (separator !== '--') throw new Error(`${program} must end its options with --: ${e.argv.join(' ')}`)
     if (program === 'mv' && flag === '-f' && first !== undefined && second !== undefined) {
       if (options.failRename === true) {
         return { value: { ...RAN, exitCode: 1, stderr: 'mv: cannot move: permission denied\n' } }
@@ -169,19 +170,21 @@ export async function drawSpinner($: Engine, columns = 40): Promise<RenderElemen
   })
 }
 
+export const TOOL_USE_PROPS: Props<'ToolUse'> = {
+  tool_use_id: 'toolu_1',
+  tool: 'Bash',
+  input: { command: 'ls' },
+  isRunning: false,
+  isErrored: false,
+  isInterrupted: false,
+}
+
 export const TOOL_ROWS: { [C in 'ToolUse' | 'ToolResult' | 'ToolGroup' | 'ToolProgress']: Args<'ui.render'> } = {
   ToolUse: {
     surface: 'terminal',
     component: 'ToolUse',
     requestId: 'toolu_1',
-    props: {
-      tool_use_id: 'toolu_1',
-      tool: 'Bash',
-      input: { command: 'ls' },
-      isRunning: false,
-      isErrored: false,
-      isInterrupted: false,
-    },
+    props: TOOL_USE_PROPS,
   },
   ToolResult: {
     surface: 'terminal',
