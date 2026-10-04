@@ -126,11 +126,12 @@ copilot
 
 For Grok, `--trust` is needed once per clone so project hooks and the turn-end guard load; `/hooks-trust` inside Grok works too.
 For GitHub Copilot CLI, accept the repository trust prompt once per clone so `.github/hooks/fm-primary.json` and project instructions load.
+For Claude Code, accept the folder trust prompt once per clone so the tracked Calm mod in `.claude/plugins/fm-calm` loads from the repo-local marketplace in `.claude/settings.json`; mods need Claude Code 2.1.287 or newer.
 For Pi, approve the project trust prompt once per clone on first launch so the tracked `.pi/extensions/*.ts` files auto-load.
-Pi's `/calm` toggle hides supported transcript chrome, including canonically classified Firstmate operational user rows, and uses a Calm-only animated working boat during active runs while preserving all model context and session data.
+The `/calm` toggle on Claude Code and on Pi hides supported transcript chrome, including canonically classified Firstmate operational user rows, and uses a Calm-only animated working boat during active runs while preserving all model context and session data.
 Those Calm-hidden operational inputs remain ordinary user-role messages with unchanged delivery, ordering, authority, persistence, and exports.
-The preference persists for the effective Firstmate home, and toggling it off restores ordinary rendering.
-[Calm's current behavior and supported limits](docs/calm.md) are separate from its [version-scoped maintainer evidence](docs/calm-mode-feasibility.md).
+The preference persists for the effective Firstmate home in the `config/calm` file both harnesses share, and toggling it off restores ordinary rendering.
+[Calm's current behavior and supported limits](docs/calm.md), including how a home that runs upstream firstmate code loads the Claude Code mod from this fork, are separate from its [version-scoped maintainer evidence](docs/calm-mode-feasibility.md).
 Pi's `/supervision-model` command pins a cheaper model and a shallower reasoning effort for the supervision branch alone, from the eligible models and thinking levels Pi itself reports, and with no pin the branch normally follows your own conversation's model and effort; see the [configuration schema](docs/configuration.md#pi-supervision-branch-model-and-effort-configsupervision-branch-model-configsupervision-branch-effort).
 
 ### About this fork

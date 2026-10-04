@@ -1,0 +1,22 @@
+❯ /calm on
+  ⎿  fm-calm: Calm is on.
+
+❯ Use the Read tool on notes.txt five
+  times, one call per step, then reply
+  with only its first word.
+
+● anchor
+
+✻ Baked for 8s · done 9:04 PM
+
+❯ Use the Read tool on notes.txt five
+  times, one call per step, then reply
+  with only its first word.
+              <|
+~~-~~~-~~~-~~\__/~-~~~-~~~-~~~-~~~-~~~-~
+
+────────────────────────────────────────
+❯
+────────────────────────────────────────
+  Haiku 4.5 | ctx: 20% used
+  ⏸ manual mode on · ← for agents

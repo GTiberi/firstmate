@@ -1,0 +1,18 @@
+❯ /calm status
+  ⎿  fm-calm: Calm is off.
+
+❯ Use the Read tool on notes.txt five times, one call per step, then reply with only its first
+  word.
+
+● anchor
+
+✻ Churned for 4s · done 9:03 PM
+
+❯ /calm on
+  ⎿  fm-calm: Calm is on.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+❯
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  Haiku 4.5 | ctx: 19% used
+  ⏸ manual mode on · ← for agents
