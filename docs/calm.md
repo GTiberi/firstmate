@@ -112,7 +112,7 @@ These are supported-API boundaries rather than hidden-content failures.
 - **The transcript view (`Ctrl+O`)** draws through the same sites, so tool rows stay hidden there until Calm is turned off.
 - **The boat appears only where Claude Code draws its spinner.**
   While a long reply streams on the main screen Claude Code draws no spinner row of its own, so there is nothing to replace.
-- **A reload of the mod** resets the boat's resting column, because the animation state lives in the mod's own memory; `/clear` and `/resume` reset it by design.
+- **A reload of the mod** resets the boat's resting column, because the animation state lives in the mod's own memory, and a run already under way keeps the stock spinner until the next one starts; `/clear` and `/resume` reset the column by design.
 
 ## Regression entry points
 

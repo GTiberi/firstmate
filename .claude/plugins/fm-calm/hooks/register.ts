@@ -54,9 +54,24 @@ let temporaryCounter = 0
 
 /** The Firstmate checkout this session runs in, or undefined when it runs somewhere else. */
 async function firstmateCheckoutRoot($: EngineInterface): Promise<string | undefined> {
-  const candidates = [await $.session.root(), await $.session.cwd()]
+  const candidates: string[] = []
+  // A session that cannot name a directory has no checkout there, not a failed start.
+  try {
+    candidates.push(await $.session.root())
+  } catch {
+    // no project root
+  }
+  try {
+    candidates.push(await $.session.cwd())
+  } catch {
+    // no working directory
+  }
   for (const candidate of candidates) {
-    if (await $.fs.exists(joinPath(candidate, FIRSTMATE_CHECKOUT_MARKER))) return candidate
+    try {
+      if (await $.fs.exists(joinPath(candidate, FIRSTMATE_CHECKOUT_MARKER))) return candidate
+    } catch {
+      // an unreadable directory is not a checkout
+    }
   }
   return undefined
 }

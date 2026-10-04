@@ -236,6 +236,17 @@ describe('where the home is', () => {
     expect(world.files.get(PREFERENCE)).toBe('on\n')
   })
 
+  test('a session that cannot name its directories starts normally and resolves no home', async ($, on) => {
+    const world = inWorld(on, { directoriesRefused: true })
+
+    await startSession($)
+
+    expect(world.commands).toHaveLength(1)
+    expect(await runCalm($, 'status')).toBe('Calm is off.')
+    expect(await runCalm($, 'on')).toContain('no Firstmate home')
+    expect(world.writes).toEqual([])
+  })
+
   test('a session outside any Firstmate home never writes anywhere', async ($, on) => {
     const world = inWorld(on, { isCheckout: false, root: '/work/other-project' })
     await startSession($)

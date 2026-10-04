@@ -45,6 +45,8 @@ export type WorldOptions = {
   unreadable?: boolean
   /** Another plugin already owns the name /calm. */
   commandTaken?: boolean
+  /** The session can name neither its project root nor its working directory. */
+  directoriesRefused?: boolean
 }
 
 export type World = {
@@ -74,8 +76,12 @@ export function inWorld(on: On, options: WorldOptions = {}): World {
   mock.env(on, options.env ?? {})
   const clock = mock.clock(on)
 
-  on('session.root', () => ({ value: root }))
-  on('session.cwd', () => ({ value: options.cwd ?? root }))
+  on('session.root', () =>
+    options.directoriesRefused === true ? { deny: 'no project root' } : { value: root },
+  )
+  on('session.cwd', () =>
+    options.directoriesRefused === true ? { deny: 'no working directory' } : { value: options.cwd ?? root },
+  )
   on('fs.exists', (_$, e) => ({ value: files.has(e.path) }))
   on('fs.read', (_$, e) => {
     if (options.unreadable === true) return { deny: 'EACCES: permission denied' }

@@ -84,9 +84,9 @@ Validating marketplace manifest: <fork clone>/.claude/plugins/.claude-plugin/mar
 
 ```text
 $ claude plugin test .claude/plugins/fm-calm
- 79 pass
+ 80 pass
  0 fail
-Ran 79 tests across 5 files. [1.96s]
+Ran 80 tests across 5 files. [1.64s]
 ```
 
 ## Refresh
