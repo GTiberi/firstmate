@@ -1,0 +1,8 @@
+{
+  "name": "fm-calm",
+  "version": "0.1.0",
+  "description": "Firstmate's /calm presentation toggle for Claude Code: while on, an animated two-row boat replaces the spinner and tool rows, tool results and Firstmate's operational user rows are not drawn. Presentation only; the choice lives in config/calm, shared with the Pi /calm command.",
+  "author": {
+    "name": "Firstmate"
+  }
+}

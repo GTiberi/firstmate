@@ -329,6 +329,54 @@
       "audience": "maintainer-architecture"
     },
     {
+      "path": "docs/evidence/calm-claude-mod/01-calm-off-stock-working.txt",
+      "audience": "maintainer-verification"
+    },
+    {
+      "path": "docs/evidence/calm-claude-mod/02-calm-off-stock-settled.txt",
+      "audience": "maintainer-verification"
+    },
+    {
+      "path": "docs/evidence/calm-claude-mod/03-calm-on-toggle.txt",
+      "audience": "maintainer-verification"
+    },
+    {
+      "path": "docs/evidence/calm-claude-mod/04-calm-on-boat-start.txt",
+      "audience": "maintainer-verification"
+    },
+    {
+      "path": "docs/evidence/calm-claude-mod/05-calm-on-boat-later.txt",
+      "audience": "maintainer-verification"
+    },
+    {
+      "path": "docs/evidence/calm-claude-mod/06-calm-on-settled-tool-rows-hidden.txt",
+      "audience": "maintainer-verification"
+    },
+    {
+      "path": "docs/evidence/calm-claude-mod/07-calm-on-resized-to-40-columns.txt",
+      "audience": "maintainer-verification"
+    },
+    {
+      "path": "docs/evidence/calm-claude-mod/08-calm-on-operational-row-hidden.txt",
+      "audience": "maintainer-verification"
+    },
+    {
+      "path": "docs/evidence/calm-claude-mod/09-calm-off-restored-history.txt",
+      "audience": "maintainer-verification"
+    },
+    {
+      "path": "docs/evidence/calm-claude-mod/10-calm-off-stock-working-again.txt",
+      "audience": "maintainer-verification"
+    },
+    {
+      "path": "docs/evidence/calm-claude-mod/11-boat-ansi-codes.txt",
+      "audience": "maintainer-verification"
+    },
+    {
+      "path": "docs/evidence/calm-claude-mod/README.md",
+      "audience": "maintainer-verification"
+    },
+    {
       "path": "docs/examples/crew-dispatch.json",
       "audience": "operator-example"
     },

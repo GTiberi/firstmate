@@ -1,0 +1,3 @@
+tmux capture-pane -p -e, the two boat rows of 05-calm-on-boat-later.txt, ESC for the escape byte, the water run shortened to one wave:
+ESC[49m      ESC[38;5;3m<|ESC[39m
+ESC[38;5;4m~ESC[38;5;3m\__/ESC[38;5;4m~

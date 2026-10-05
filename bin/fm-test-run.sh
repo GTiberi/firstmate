@@ -316,6 +316,7 @@ family_for_basename() {
       ;;
     fm-afk-pi-herdr-return-e2e.test.sh|\
     fm-bearings-board-lavish-live-e2e.test.sh|\
+    fm-calm-claude-mod-live-e2e.test.sh|\
     fm-claude-stop-autoarm-live-e2e.test.sh|\
     fm-cmux-claude-composer-live-e2e.test.sh|\
     fm-composer-matrix-live-e2e.test.sh|\
@@ -1320,11 +1321,32 @@ families_for_changed_path() {
       printf '%s\n' __script__:fm-pi-primary-types.test.sh
       printf '%s\n' live-harness-optin
       ;;
+    .claude/plugins/*)
+      # The Claude Code Calm mod and its repo-local marketplace: its own suite
+      # validates and tests the plugin through the installed claude and replays
+      # the boat and the operational-row rules against their owners.
+      printf '%s\n' __script__:fm-calm-claude-mod.test.sh
+      printf '%s\n' __script__:fm-calm-claude-mod-live-e2e.test.sh
+      ;;
+    .pi/extensions/lib/fm-calm-working-ship.ts)
+      # The Pi boat the Claude Code mod's own copy is replayed against; the Pi
+      # suites that load it stay selected through their family.
+      printf '%s\n' pure-contract-unit
+      printf '%s\n' __script__:fm-calm-claude-mod.test.sh
+      ;;
+    bin/fm-operational-input.sh)
+      # The protocol owner the Claude Code Calm mod's row classifier is
+      # replayed against, beside the pure-contract suites that already cover it.
+      printf '%s\n' pure-contract-unit
+      printf '%s\n' __script__:fm-calm-claude-mod.test.sh
+      ;;
     bin/fm-sessionstart-run.sh|.claude/settings.json|.codex/hooks.json|\
     .pi/extensions/fm-primary-turnend-guard.ts)
       # The run tier's two harness-supplied facts (source vocabulary and
       # context-reset stdout injection) only show up against a real harness.
+      # .claude/settings.json also declares the Calm mod's marketplace.
       printf '%s\n' __script__:fm-pi-windows-shell-invocation.test.sh
+      printf '%s\n' __script__:fm-calm-claude-mod.test.sh
       printf '%s\n' session-bootstrap
       printf '%s\n' live-harness-optin
       ;;
@@ -1399,7 +1421,7 @@ families_for_changed_path() {
     bin/fm-install-actionlint.sh|\
     bin/fm-brief.sh|bin/fm-ensure-agents-md.sh|bin/fm-crew-state.sh|\
     bin/fm-captain-hold.sh|bin/fm-decision-hold.sh|bin/fm-supervision*|bin/fm-transition-lib.sh|\
-    bin/fm-tmux-lib.sh|bin/fm-marker-lib.sh|bin/fm-operational-input.sh|bin/fm-tasks-axi-lib.sh|\
+    bin/fm-tmux-lib.sh|bin/fm-marker-lib.sh|bin/fm-tasks-axi-lib.sh|\
     bin/fm-vendor-auth-probe.sh|\
     bin/fm-primary-scope-lib.sh|bin/fm-project-mode.sh|bin/fm-promote.sh|\
     bin/fm-ff-lib.sh|bin/fm-gotmp*|bin/*pretool*)

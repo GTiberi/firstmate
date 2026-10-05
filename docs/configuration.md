@@ -25,14 +25,20 @@ Wake, watcher, away-mode, and Relay-specific state mechanics remain with their n
 `AGENTS.md` retains the run-once and read-once operator rules, lock-refusal safety, installation consent, and direct-report recovery boundaries because those facts apply at every session start.
 Ordinary dead-direct-report recovery is owned by `stuck-crewmate-recovery`, while persistent-secondmate recovery is owned by `secondmate-provisioning`.
 
-## Pi Calm preference (config/calm)
+## Calm preference (config/calm)
 
-The Pi Calm extension stores the captain's home-local presentation choice in gitignored `config/calm` under the effective Firstmate home, resolved from `FM_HOME`, then `FM_ROOT_OVERRIDE`, then the tracked code root derived from the extension path, or under `FM_CONFIG_OVERRIDE` when that test and specialized-setup override is present.
-The values it writes are `on` and `off`, each followed by one newline; an absent, unreadable, or unrecognized value defaults to off.
+The Calm presentation toggle stores the captain's home-local choice in gitignored `config/calm` under the effective Firstmate home, for Pi and for Claude Code alike.
+The home is resolved from `FM_HOME`, then `FM_ROOT_OVERRIDE`, then the tracked code root, or the `config` directory is `FM_CONFIG_OVERRIDE` when that test and specialized-setup override is present.
+The Pi extension derives the tracked code root from its own path.
+The Claude Code mod instead uses the Firstmate checkout its session runs in, found by `bin/fm-session-start.sh` at the session's root or working directory, because a mod loaded with `CLAUDE_CODE_PLUGIN_DIRS` can live in a different clone than the home it serves; a session with none of these resolves no file and never writes one.
+The values written are `on` and `off`, each followed by one newline; an absent, unreadable, or unrecognized value defaults to off.
 `max` is the legacy value written by a removed third presentation level whose behavior is now ordinary Calm, and it is still read as `on`, so a home upgraded from it keeps Calm on rather than dropping to off.
-The `/calm` command replaces the file atomically before changing live presentation, so a failed write leaves the current choice unchanged rather than claiming persistence.
-The extension reloads this preference on every Pi `session_start`, including startup, new, resume, fork, and reload reasons.
+The `/calm` command on either harness replaces the file atomically before changing live presentation, so a failed write leaves the current choice unchanged rather than claiming persistence.
+Pi reloads this preference on every `session_start`, including startup, new, resume, fork, and reload reasons.
+The Claude Code mod reloads it at its own `session.start` and again on every `classic.SessionStart`, which covers start, resume, clear, and compaction.
+A toggle made by either harness is therefore picked up by the other at its next session start.
 This preference is local to each Firstmate home and is not part of secondmate inherited configuration.
+[`calm.md`](calm.md) owns what Calm does on each harness and how the Claude Code mod loads.
 
 ## Pi supervision branch
 
@@ -85,7 +91,7 @@ An effort token Pi would not recognize at all is treated as no pin rather than p
 
 Cancelling the model picker cancels the whole command and changes neither choice.
 Cancelling only the effort picker keeps the standing effort choice and still applies the model pick made in the same run, and the command's one closing message reports both choices as they will actually take effect.
-Both choices are local to each Firstmate home and are not part of secondmate inherited configuration, the same as the Pi Calm preference; a secondmate home pins its own supervision model and effort with its own `/supervision-model`.
+Both choices are local to each Firstmate home and are not part of secondmate inherited configuration, the same as the Calm preference; a secondmate home pins its own supervision model and effort with its own `/supervision-model`.
 
 ## Backlog backend (.tasks.toml / config/backlog-backend)
 

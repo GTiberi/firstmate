@@ -1,0 +1,22 @@
+❯ Use the Read tool on notes.txt five times, one call per step, then reply with only its first
+  word.
+
+● anchor
+
+✻ Cogitated for 7s · done 9:05 PM · 8 messages hidden (/focus to show)
+
+● ack
+
+✻ Worked for 1s · done 9:05 PM
+
+❯ Reply with only the word steady.
+
+● steady
+
+✻ Sautéed for 0s · done 9:05 PM
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+❯
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  Haiku 4.5 | ctx: 20% used
+  ⏸ manual mode on · ← for agents

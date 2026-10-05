@@ -1,0 +1,18 @@
+❯ /calm status
+  ⎿  fm-calm: Calm is off.
+
+❯ Use the Read tool on notes.txt five times, one call per step, then reply with only its first
+  word.
+
+  Reading notes.txt
+  ⎿  notes.txt
+
+
+
+· Deliberating… (3s · ↓ 300 tokens · thought for 1s)
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+❯
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  Haiku 4.5 | ctx: 19% used
+  ⏸ manual mode on · ← for agents
