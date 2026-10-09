@@ -102,7 +102,8 @@ describe('the pane', () => {
     // The palette decision has no recorded address and gets no address row.
     const palette = waiting.findIndex((row) => row.includes('lantern brand palette'))
     expect(waiting[palette + 1]).not.toContain('https://')
-    expect(hrefsOf(tree as never)).toEqual(expect.arrayContaining([PR_NOTES, PR_FEES, PR_TAX]))
+    // An address that fits is plain text, so a terminal without hyperlinks does not draw it twice.
+    expect(hrefsOf(tree as never)).toEqual([])
   })
 
   test('lists the recent completions newest first, each with its artifact', async ($, on) => {
@@ -182,7 +183,7 @@ describe('the pane', () => {
       } as never)
       expect(await ui.find({ type: 'Text', text: /Waiting on you/ })).toBeDefined()
       expect(await ui.find({ type: 'Text', text: /Add CSV export to the ledger report/ })).toBeDefined()
-      expect(await ui.find({ type: 'Link', text: /pull\/42/ })).toBeDefined()
+      expect(await ui.find({ type: 'Text', text: /pull\/42/ })).toBeDefined()
       await ui.unmount()
     }
   })
@@ -214,13 +215,20 @@ describe('the width', () => {
   test('cuts every row to the pane and keeps every address whole behind its link', async ($, on) => {
     await started($, on, { stdout: BUSY })
 
-    for (const columns of [14, 20, 28, 36, 52, 80, 120]) {
+    for (const columns of [14, 20, 28, 36, 52]) {
       const tree = await drawPane($, columns)
       for (const row of rowsOf(tree)) {
         expect([...row].length).toBeLessThanOrEqual(columns)
       }
-      const hrefs = hrefsOf(tree as never)
-      expect(hrefs).toEqual(expect.arrayContaining([PR_FEES, PR_NOTES, PR_TAX]))
+      // Too narrow for the address: it is cut, and the whole address stays behind the cut text.
+      expect(hrefsOf(tree as never)).toEqual(expect.arrayContaining([PR_FEES, PR_NOTES, PR_TAX]))
+    }
+    for (const columns of [80, 120]) {
+      const tree = await drawPane($, columns)
+      for (const row of rowsOf(tree)) {
+        expect([...row].length).toBeLessThanOrEqual(columns)
+      }
+      expect(hrefsOf(tree as never)).toEqual([])
     }
   })
 

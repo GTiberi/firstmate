@@ -17,7 +17,7 @@ import { atom, read, update } from 'claude-code'
 import type { Elements, EngineInterface, On, RenderElement, Timer } from 'claude-code'
 
 import type { FleetState } from '../types'
-import { failureReasonOf, parseFleetCommand, USAGE } from '../lib/command'
+import { failureReasonOf, parseFleetCommand, startFailureReason, USAGE } from '../lib/command'
 import { isGapKept, isTickDue, READ_TIMEOUT_MS, TICK_MS } from '../lib/cadence'
 import { codeRootCandidates, HOME_MARKER, homeOf, joinPath, snapshotPathIn } from '../lib/home'
 import { bandRuns, type Frame, type Line, lineText, paneLines, type Run } from '../lib/layout'
@@ -130,9 +130,7 @@ async function readFleet($: EngineInterface): Promise<void> {
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      failure = /time(d)? ?out/i.test(message)
-        ? `the snapshot took longer than ${READ_TIMEOUT_MS / 1000} seconds`
-        : failureReasonOf(message)
+      failure = startFailureReason(message, READ_TIMEOUT_MS / 1000)
     }
     const finished = await $.clock.now()
     if (failure !== undefined || parsed === undefined || !parsed.isOk) {
@@ -309,10 +307,12 @@ export function register(on: On): void {
 
   // The band above the prompt: the line shown wherever the pane is not up beside the transcript.
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    // Read the fleet before anything can return: the draw is then subscribed to it, so the band is
+    // drawn again when a reading arrives, even if it had nothing to say when it was first drawn.
+    const state = await read($, fleet)
     if (session.isInert || e.props.hasSurvey || (!session.isReady && !session.isAsked)) return next(e)
 
     if (e.viewport?.isFullscreen === true) {
-      const state = await read($, fleet)
       // Where the pane would dock it opens once per load, so the picture is there without asking.
       if (!session.isAutoOpened && state.reading !== null) {
         session.isAutoOpened = true

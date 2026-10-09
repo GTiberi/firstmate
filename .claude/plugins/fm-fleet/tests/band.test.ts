@@ -97,6 +97,32 @@ describe('the band above the prompt', () => {
     }
   })
 
+  test('is drawn again when the first reading arrives after it was drawn with nothing to say', async ($, on) => {
+    const world = inWorld(on, { stdout: BUSY })
+    const ui = await $.ui.mount({
+      plugin: 'fm-fleet',
+      surface: 'terminal',
+      component: 'AbovePrompt',
+      requestId: 'band',
+      viewport: { columns: 130, rows: 30 },
+      props: {
+        hasSurvey: false,
+        isWorking: false,
+        maxRows: 4,
+        bodyColumns: 125,
+        scroll: { offset: 0, bodyRows: 4 },
+        view: {},
+      },
+    } as never)
+    expect(await ui.find({ type: 'Text', text: /Fleet/ })).toBeUndefined()
+
+    await startSession($)
+    await world.clock.settle()
+
+    expect(await ui.find({ type: 'Text', text: /3 working/ })).toBeDefined()
+    await ui.unmount()
+  })
+
   test('shows a reading in progress and then the fleet', async ($, on) => {
     const world = inWorld(on, { stdout: BUSY, hold: true })
     await startSession($)

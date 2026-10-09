@@ -12,7 +12,7 @@ import {
   widthOf,
   workState,
 } from '../lib/words'
-import { failureReasonOf, parseFleetCommand } from '../lib/command'
+import { failureReasonOf, parseFleetCommand, startFailureReason } from '../lib/command'
 
 describe('state words', () => {
   test('say each state in the captain\'s words', () => {
@@ -128,6 +128,15 @@ describe('the command words', () => {
     expect(parseFleetCommand(' Status ')).toBe('status')
     expect(parseFleetCommand('merge')).toBeUndefined()
     expect(parseFleetCommand('close now')).toBeUndefined()
+  })
+
+  test('say why the snapshot could not run without the engine\'s own wording', () => {
+    expect(startFailureReason('fm-fleet: $.process.run(/x/y.sh) timed out after 45000 ms', 45)).toBe(
+      'the snapshot took longer than 45 seconds',
+    )
+    expect(startFailureReason('spawn /x/y.sh EACCES', 45)).toBe('the snapshot command is not runnable (permission denied)')
+    expect(startFailureReason('spawn /x/y.sh ENOENT', 45)).toBe('the snapshot command was not found')
+    expect(startFailureReason('something odd', 45)).toBe('the snapshot command could not be run')
   })
 
   test('keep a failure reason to one short line', () => {

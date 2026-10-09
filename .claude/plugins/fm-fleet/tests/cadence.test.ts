@@ -169,6 +169,17 @@ describe('a read that fails', () => {
     )
   })
 
+  test('says when the snapshot command cannot be run, without the engine\'s wording', async ($, on) => {
+    const world = await started($, on, { stdout: ONE_WORKING })
+    world.setRejects('fm-fleet: $.process.run(/work/firstmate/bin/fm-bearings-snapshot.sh --json --fields work) failed: spawn EACCES')
+
+    await runFleet($, 'refresh')
+
+    expect(await bandLine($, { columns: 130 })).toBe(
+      'Fleet state unavailable (the snapshot command is not runnable (permission denied); last reading just now)',
+    )
+  })
+
   test('reports a snapshot of another format, not a guess at it', async ($, on) => {
     const world = await started($, on, { stdout: ONE_WORKING })
     world.setStdout(JSON.stringify({ schema: 'fm-bearings.v2' }))

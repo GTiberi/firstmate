@@ -74,10 +74,17 @@ function counts(model: Model): Run[] {
   ]
 }
 
-/** The address on a row of its own, cut in the middle if the row is too narrow for all of it. */
+/**
+ * The address on a row of its own. An address that fits is plain text, which a terminal that
+ * links addresses links whole; one that does not fit is cut in the middle and keeps its `href`, so
+ * the whole address stays behind the cut text. A link element is not used for an address that
+ * fits, because a terminal without hyperlinks draws such an element as its text and then the
+ * address again.
+ */
 function linkLine(url: string, width: number, tone: Tone | undefined): Line {
   const room = Math.max(1, width - LINK_INDENT)
-  const run: Run = { text: cutMiddle(url, room), href: url }
+  const shown = cutMiddle(url, room)
+  const run: Run = shown === url ? { text: url } : { text: shown, href: url }
   if (tone !== undefined) run.tone = tone
   return [plain(' '.repeat(LINK_INDENT)), run]
 }
