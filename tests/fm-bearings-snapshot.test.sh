@@ -1057,6 +1057,43 @@ test_default_is_bounded_and_local_only() {
   pass "default output is bounded, local-only, and marks omitted surfaces"
 }
 
+test_work_fields_are_opt_in_and_additive() {
+  local home fakebin base work toon
+  home=$(make_home work-fields); write_fixture "$home"
+  fakebin=$(make_fakebin "$home")
+  base=$(run "$home" "$fakebin" --json)
+  work=$(run "$home" "$fakebin" --json --fields work)
+  # Without the flag the rows carry none of the added keys.
+  printf '%s' "$base" | jq -e '
+    (.in_flight | all(has("title") or has("since") | not))
+      and (.gates | all(has("repo") or has("since") | not))
+      and (.landed | all(has("date") | not))
+  ' >/dev/null || fail "the default projection must not carry the work fields: $base"
+  # With the flag the model is the default model plus exactly those keys.
+  [ "$(printf '%s' "$base" | jq -S .)" = "$(printf '%s' "$work" | jq -S 'del(.in_flight[].title, .in_flight[].since, .gates[].repo, .gates[].since, .landed[].date)')" ] \
+    || fail "--fields work must only add title, since, repo and date: $work"
+  # The values come from the backlog rows the default projection already holds.
+  printf '%s' "$work" | jq -e '
+    (.in_flight | any(.id == "ship-task" and .title == "Ship the thing" and .since == "2026-07-11"))
+      and (.in_flight | any(.id == "scout-x" and .title == "Investigate the thing"))
+      and (.gates | any(.id == "live-gate" and .repo == "firstmate" and .since == null))
+      and (.landed | any(.id == "done-a" and .date == "2026-07-10"))
+  ' >/dev/null || fail "--fields work values are wrong: $work"
+  # Every row of a list has the same keys, so the TOON table stays uniform; a value its
+  # source does not carry (a secondmate child has no title) is null, not absent.
+  printf '%s' "$work" | jq -e '
+    ([.in_flight[] | keys_unsorted] | unique | length) == 1
+      and ([.gates[] | keys_unsorted] | unique | length) == 1
+      and ([.landed[] | keys_unsorted] | unique | length) == 1
+  ' >/dev/null || fail "--fields work must give every row of a list the same keys: $work"
+  toon=$(run "$home" "$fakebin" --fields work)
+  assert_contains "$toon" "in_flight[" "TOON in_flight table missing"
+  assert_contains "$toon" "{id,kind,state,repo,doing,title,since}:" "TOON in_flight header must declare the work fields"
+  assert_contains "$toon" "{id,what,artifact,owner,date}:" "TOON landed header must declare date"
+  assert_contains "$(run "$home" "$fakebin" --help)" "--fields work" "--help must document the work fields"
+  pass "--fields work adds title, since, repo and date, and leaves the default projection alone"
+}
+
 test_toon_json_parity() {
   local home fakebin toon json keys k
   home=$(make_home parity); write_fixture "$home"
@@ -2942,6 +2979,7 @@ test_registry_unavailability_and_bounds_are_explicit
 test_current_landed_baseline_is_repeatable_and_prior_report_independent
 test_default_is_bounded_and_local_only
 test_toon_json_parity
+test_work_fields_are_opt_in_and_additive
 test_landed_includes_secondmate_home_merges
 test_landed_default_balances_dominant_and_sparse_homes
 test_landed_default_refills_capacity_after_sparse_homes_exhaust

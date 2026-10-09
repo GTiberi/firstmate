@@ -57,11 +57,20 @@
 # waste capacity, and --all-landed switches back to the complete global newest-first
 # order.
 #
+# --fields work adds the facts a fleet view needs to tell pieces of work apart and age
+# them, to rows the default projection already holds: in_flight rows gain title (the
+# backlog title) and since (the backlog date the item was filed), gates gain repo and
+# since, and landed rows gain date (the completion date). Each value is null when its
+# source does not carry it, which is always so for a registered secondmate's active
+# children (its home ledger records neither) and for a secondmate's queued gates (no
+# filed date). Every row of a list gains the same keys, so the TOON tabular form stays
+# uniform, and without the flag the output is byte-for-byte what it was.
+#
 # Flags:
 #   (default)        compact projection with bounded remote-ledger collection, TOON
 #   --json           the same projected model as JSON (machine/debug; parity form)
 #   --include-prs    ALSO do live GitHub open-PR discovery + checks
-#   --fields <list>  opt in to dropped surfaces: bodies,paths,actions,endpoints
+#   --fields <list>  opt in to dropped surfaces: bodies,paths,actions,endpoints,work
 #   --all-in-flight  include every in-flight task
 #   --all-decisions  include every open decision and captain hold in the bounded snapshot
 #   --all-secondmates include every aggregated secondmate record
@@ -142,7 +151,11 @@ For every registered secondmate, readable structured facts from its own home are
   Parent events and bounded terminal reads are labeled fallback or contradiction
   evidence and never become current work. The provenance and freshness fields
   distinguish live and cached ledgers; a home without either is explicitly unreadable.
-Opt-in surfaces: --fields bodies|paths|actions|endpoints, --all-in-flight,
+--fields work adds title and since to in_flight rows, repo and since to gates, and the
+  completion date to landed; a value is null where its source does not carry it (a
+  secondmate's active children carry neither title nor since). Without it the output is
+  unchanged.
+Opt-in surfaces: --fields bodies|paths|actions|endpoints|work, --all-in-flight,
   --all-decisions (all open decisions and captain holds in the bounded snapshot),
   --all-secondmates, --all-landed, --all-reports, --all-queued, --all-recorded-prs,
   --all-unhealthy, --all-pr-repos, --include-prs (adds candidate_prs).
@@ -375,10 +388,11 @@ MODEL=$(printf '%s' "$SNAP" | jq \
            + ($base | fit($context_n - $title_n)))
         end
       end;
-  def as_gate($owner):
+  def as_gate($owner; $work):
     {id, title:(.title | trunc(60)),
      blocked_by:((.unresolved_blocker_ids // []) | if length > 0 then join(",") else "-" end | trunc(120)),
-     reason:(hold_gate_reason | trunc(40)), owner:$owner};
+     reason:(hold_gate_reason | trunc(40)), owner:$owner}
+    + (if $work then {repo:((.repo // null) | trunc(60)), since:(.since // null)} else {} end);
   def round_robin_landed($n):
     . as $groups
     | [range(0; (($groups | map(length) | max) // 0)) as $i
@@ -390,6 +404,7 @@ MODEL=$(printf '%s' "$SNAP" | jq \
   | (($fl | index("paths")) != null) as $f_paths
   | (($fl | index("actions")) != null) as $f_actions
   | (($fl | index("endpoints")) != null) as $f_endpoints
+  | (($fl | index("work")) != null) as $f_work
   | ([ .backlog.records[] | select(.state == "done" and .structured and .hold_kind != "captain")
        | {id, title, pr_url, report_path, local_note, completion, home:"(main)", home_id:"(main)"} ]) as $main_done
   | ((.secondmate_landed.records) // []) as $mate_done
@@ -455,14 +470,15 @@ MODEL=$(printf '%s' "$SNAP" | jq \
         repo:(.backlog.repo // .project // null),
         doing: ((.current_state.detail // "") as $d
                 | (if $d != "" then $d else (.hints.last_event_text // "") end) | trunc(90))
-      } ]
+      } + (if $f_work then {title:((.backlog.title // null) | trunc(70)), since:(.backlog.since // null)} else {} end) ]
      + [ $secondmate_views[] as $m
          | $m.active_children[]?
          | {id:($m.id + "/" + .id),
             kind:(.kind // "secondmate"),
             state:(.state // "working"),
             repo:(.repo // null),
-            doing:((.doing // .state) | trunc(90))} ]) as $in_flight_all
+            doing:((.doing // .state) | trunc(90))}
+           + (if $f_work then {title:(.title // null), since:(.since // null)} else {} end) ]) as $in_flight_all
   | ([ .backlog.records[]
          | . as $record
          | select(.structured and .hold_bucket != null)
@@ -497,7 +513,8 @@ MODEL=$(printf '%s' "$SNAP" | jq \
           title:((.main_inventory.reason // "main inventory invalid") | trunc(60)),
           blocked_by:"-",
           reason:"main inventory",
-          owner:"(main)"}]
+          owner:"(main)"}
+         + (if $f_work then {repo:null, since:null} else {} end)]
       else [] end)
      + [ .backlog.records[]
          | . as $record
@@ -506,13 +523,13 @@ MODEL=$(printf '%s' "$SNAP" | jq \
               (.state == "in_flight" and .current_role == "held" and ($working_ids | index($record.id) | not))))
          | select(.captain_actionable != true)
          | select((.hold_bucket == null) or ($all_decisions == 0))
-         | as_gate("(main)") ]
+         | as_gate("(main)"; $f_work) ]
      + [ (.secondmate_current.records // [])[] as $m
          | select($m.provenance.selected == "structured-home")
          | $m.queued[]?
          | select(.captain_actionable != true)
          | select((.hold_bucket == null) or ($all_decisions == 0))
-         | as_gate($m.id) ]) as $gates_all
+         | as_gate($m.id; $f_work) ]) as $gates_all
   | ([ .scout_reports[]
        | . as $r
        | select(($all_reports == 1) or (($rel_ids | index($r.id)) != null))
@@ -531,7 +548,8 @@ MODEL=$(printf '%s' "$SNAP" | jq \
         | {id, spawn_gen:(.spawn_gen // null), host:(.host // null), kind:(.reconcile_inventory.kind // null), ids:((.reconcile_inventory.ids // []) | map(select(type == "string")) | sort)} ],
       decisions_open: (if $all_decisions == 1 then $decisions_all else $decisions_all[:$decisions_n] end),
       landed: ($done | map({id, what:(.title | trunc(70)),
-                            artifact:(.pr_url // .report_path // .local_note // "-"),owner:.home_id})),
+                            artifact:(.pr_url // .report_path // .local_note // "-"),owner:.home_id}
+                           + (if $f_work then {date:(.completion.date // null)} else {} end))),
       gates: (if $all_queued == 1 then $gates_all else $gates_all[:$gates_n] end),
       reports: (if $all_reports == 1 then $reports_all else $reports_all[:$reports_n] end),
       recorded_prs: (if $all_recorded_prs == 1 then $recorded_prs_all else $recorded_prs_all[:$recorded_prs_n] end)
