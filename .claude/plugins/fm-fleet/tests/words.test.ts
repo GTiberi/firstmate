@@ -134,7 +134,7 @@ describe('the command words', () => {
     expect(startFailureReason('fm-fleet: $.process.run(/x/y.sh) timed out after 45000 ms', 45)).toBe(
       'the snapshot took longer than 45 seconds',
     )
-    expect(startFailureReason('spawn /x/y.sh EACCES', 45)).toBe('the snapshot command is not runnable (permission denied)')
+    expect(startFailureReason('spawn /x/y.sh EACCES', 45)).toBe('the snapshot command is not runnable: permission denied')
     expect(startFailureReason('spawn /x/y.sh ENOENT', 45)).toBe('the snapshot command was not found')
     expect(startFailureReason('something odd', 45)).toBe('the snapshot command could not be run')
   })

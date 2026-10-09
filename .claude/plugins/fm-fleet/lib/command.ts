@@ -29,7 +29,7 @@ export function failureReasonOf(message: string): string {
 /** Why the snapshot command could not be run or finished, without the engine's own wording. */
 export function startFailureReason(message: string, timeoutSeconds: number): string {
   if (/time(d)? ?out|still running/i.test(message)) return `the snapshot took longer than ${timeoutSeconds} seconds`
-  if (/EACCES|EPERM|permission denied/i.test(message)) return 'the snapshot command is not runnable (permission denied)'
+  if (/EACCES|EPERM|permission denied/i.test(message)) return 'the snapshot command is not runnable: permission denied'
   if (/ENOENT|no such file|not found/i.test(message)) return 'the snapshot command was not found'
   return 'the snapshot command could not be run'
 }

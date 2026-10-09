@@ -176,7 +176,7 @@ describe('a read that fails', () => {
     await runFleet($, 'refresh')
 
     expect(await bandLine($, { columns: 130 })).toBe(
-      'Fleet state unavailable (the snapshot command is not runnable (permission denied); last reading just now)',
+      'Fleet state unavailable (the snapshot command is not runnable: permission denied; last reading just now)',
     )
   })
 

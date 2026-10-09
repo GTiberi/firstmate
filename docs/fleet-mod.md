@@ -107,6 +107,9 @@ The band is raised in the terminal and in the Desktop app only, and a pane is dr
 - A registered second mate's active pieces appear as the snapshot gives them, which carries neither a title nor a start date, so those rows lead with what the piece is doing.
 - A code root that predates the `work` fields still works: rows lead with what the piece is doing, no start date shows, and one dim row says the reading has no titles or dates.
 - The pane scrolls when the fleet is taller than it, with the keys Claude Code gives a focused pane.
+- The band is one site shared by every mod.
+  Where another mod draws its own band and does not pass the event on, and Claude Code runs it before this one, this line does not show, while the pane is unaffected.
+  Claude Code decides the order among the mods you install, and the fleet view cannot choose its place; with `--plugin-dir`, the first directory named runs first.
 - The pane shows no ages for decisions and queued work, because the snapshot gives no start for them.
 
 ## Regression entry points
