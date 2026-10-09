@@ -110,6 +110,7 @@ function ageOf(
   return null
 }
 
+// Days are UTC days, as the snapshot's own are (it reckons its holds and its today in UTC).
 function dayOf(epoch: number): string {
   return new Date(epoch).toISOString().slice(0, 10)
 }
