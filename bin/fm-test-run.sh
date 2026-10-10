@@ -1321,10 +1321,21 @@ families_for_changed_path() {
       printf '%s\n' __script__:fm-pi-primary-types.test.sh
       printf '%s\n' live-harness-optin
       ;;
+    .claude/plugins/fm-fleet/*)
+      # The Claude Code fleet mod: its own suite validates and tests the plugin
+      # through the installed claude and reads the real Bearings snapshot with it.
+      printf '%s\n' __script__:fm-fleet-claude-mod.test.sh
+      ;;
+    .claude/plugins/.claude-plugin/*)
+      # The repo-local marketplace both Claude Code mods are listed in.
+      printf '%s\n' __script__:fm-calm-claude-mod.test.sh
+      printf '%s\n' __script__:fm-calm-claude-mod-live-e2e.test.sh
+      printf '%s\n' __script__:fm-fleet-claude-mod.test.sh
+      ;;
     .claude/plugins/*)
-      # The Claude Code Calm mod and its repo-local marketplace: its own suite
-      # validates and tests the plugin through the installed claude and replays
-      # the boat and the operational-row rules against their owners.
+      # The Claude Code Calm mod: its own suite validates and tests the plugin
+      # through the installed claude and replays the boat and the operational-row
+      # rules against their owners.
       printf '%s\n' __script__:fm-calm-claude-mod.test.sh
       printf '%s\n' __script__:fm-calm-claude-mod-live-e2e.test.sh
       ;;
@@ -1407,8 +1418,12 @@ families_for_changed_path() {
       printf '%s\n' watcher-wake-lock
       printf '%s\n' live-harness-optin
       ;;
-    bin/fm-bearings-snapshot.sh|bin/fm-fleet-snapshot.sh|bin/fm-fleet-view.sh|\
-    bin/fm-home-summary-refresh.sh)
+    bin/fm-bearings-snapshot.sh)
+      printf '%s\n' snapshot-bearings
+      # The Claude Code fleet mod reads this script's --fields work output.
+      printf '%s\n' __script__:fm-fleet-claude-mod.test.sh
+      ;;
+    bin/fm-fleet-snapshot.sh|bin/fm-fleet-view.sh|bin/fm-home-summary-refresh.sh)
       printf '%s\n' snapshot-bearings
       ;;
     bin/fm-install-herdr.sh|bin/fm-install-treehouse.sh|bin/fm-herdr-ci-cleanup.sh)

@@ -9,6 +9,11 @@
       "name": "fm-calm",
       "source": "./fm-calm",
       "description": "Firstmate's /calm presentation toggle for Claude Code"
+    },
+    {
+      "name": "fm-fleet",
+      "source": "./fm-fleet",
+      "description": "Firstmate's fleet view for Claude Code: every project with work under way and where each piece stands"
     }
   ]
 }

@@ -132,6 +132,7 @@ The `/calm` toggle on Claude Code and on Pi hides supported transcript chrome, i
 Those Calm-hidden operational inputs remain ordinary user-role messages with unchanged delivery, ordering, authority, persistence, and exports.
 The preference persists for the effective Firstmate home in the `config/calm` file both harnesses share, and toggling it off restores ordinary rendering.
 [Calm's current behavior and supported limits](docs/calm.md), including how a home that runs upstream firstmate code loads the Claude Code mod from this fork, are separate from its [version-scoped maintainer evidence](docs/calm-mode-feasibility.md).
+The `/fleet` mod, installed once with `claude plugin install fm-fleet@firstmate-local`, keeps every project with work under way and where each piece stands in a side pane, or in one line above the prompt where the pane cannot dock; [its contract and limits](docs/fleet-mod.md) need Claude Code 2.1.290 or newer.
 Pi's `/supervision-model` command pins a cheaper model and a shallower reasoning effort for the supervision branch alone, from the eligible models and thinking levels Pi itself reports, and with no pin the branch normally follows your own conversation's model and effort; see the [configuration schema](docs/configuration.md#pi-supervision-branch-model-and-effort-configsupervision-branch-model-configsupervision-branch-effort).
 
 ### About this fork
@@ -240,6 +241,7 @@ Firstmate's skills live in two separate places with different audiences:
 - [docs/extension-bindings.md](docs/extension-bindings.md) - maintainer architecture for the narrow trusted external `process-event-adapter/1` package, binding, handshake, and evidence boundary.
 - [docs/remote-secondmates.md](docs/remote-secondmates.md) - current setup, routing, transfer, recovery, and safety behavior for whole-home remote second mates.
 - [docs/calm.md](docs/calm.md) - current Pi `/calm` behavior and supported presentation limits.
+- [docs/fleet-mod.md](docs/fleet-mod.md) - the `/fleet` Claude Code mod: what its pane and line show, when it reads, how to install it, and its limits.
 - [docs/voice-relay.md](docs/voice-relay.md) - the optional spoken interface: setup on both machines, measured round-trip cost, what a spoken answer may read, and what this build does not do yet.
 - [docs/wedge-alarm.md](docs/wedge-alarm.md) - configure the active alert for an away-mode escalation delivery that gets stuck.
 - [docs/tmux-backend.md](docs/tmux-backend.md) - current setup and limits for the tmux reference backend.

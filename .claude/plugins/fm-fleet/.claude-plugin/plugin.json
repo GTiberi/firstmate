@@ -1,0 +1,9 @@
+{
+  "name": "fm-fleet",
+  "version": "0.1.0",
+  "description": "Firstmate's fleet view for Claude Code: a side pane (or one line above the prompt) that shows every project with work under way and where each piece stands. A window only: it reads the Bearings snapshot and steers, merges, and answers nothing.",
+  "author": {
+    "name": "Firstmate"
+  },
+  "types": "./types/index.d.ts"
+}

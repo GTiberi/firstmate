@@ -1,0 +1,4 @@
+{
+  "description": "Firstmate Fleet: the /fleet command, the fleet pane, and the band above the prompt",
+  "modules": ["./register.ts"]
+}
